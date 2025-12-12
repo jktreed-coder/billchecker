@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v11.7</title>
+<title>Tibber Fakturaanalyse v11.8</title>
 
 <style>
 @font-face{font-family:"Silka";src:url("Silka-Regular.woff2") format("woff2"),url("Silka-Regular.woff") format("woff");font-weight:400;}
@@ -112,7 +112,12 @@ async function processFile(){
 
     if(f.type==="application/pdf"){
         const pdfText=await extractPDF(f);
-        const imgText=await extractPDFasImageText(f);
+        let imgText = '';
+        if (pdfText.length < 100) { // If text extraction failed, OCR all pages
+            imgText = await extractPDFasImageText(f);
+        } else {
+            imgText = await extractPDFasImageText(f, 1); // Only first page if text exists
+        }
         text=pdfText+" "+imgText;
     }else{
         text=await extractImage(f);
@@ -134,19 +139,24 @@ async function extractPDF(f){
     return out;
 }
 
-async function extractPDFasImageText(file){
+async function extractPDFasImageText(file, maxPages = Infinity){
     const buf=await file.arrayBuffer();
     const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-    const page=await pdf.getPage(1);
-    const viewport=page.getViewport({scale:2});
-    const canvas=document.createElement("canvas");
-    const ctx=canvas.getContext("2d");
-    canvas.width=viewport.width;
-    canvas.height=viewport.height;
-    await page.render({canvasContext:ctx,viewport}).promise;
-    const blob=await new Promise(r=>canvas.toBlob(r));
-    const ocr=await Tesseract.recognize(blob,"nor+eng");
-    return ocr.data.text;
+    let out = '';
+    const numPages = Math.min(pdf.numPages, maxPages);
+    for(let i=1; i<=numPages; i++){
+        const page=await pdf.getPage(i);
+        const viewport=page.getViewport({scale:2});
+        const canvas=document.createElement("canvas");
+        const ctx=canvas.getContext("2d");
+        canvas.width=viewport.width;
+        canvas.height=viewport.height;
+        await page.render({canvasContext:ctx,viewport}).promise;
+        const blob=await new Promise(r=>canvas.toBlob(r));
+        const ocr=await Tesseract.recognize(blob,"nor+eng");
+        out += ocr.data.text + " ";
+    }
+    return out;
 }
 
 async function extractImage(f){
@@ -154,42 +164,61 @@ async function extractImage(f){
     return r.data.text;
 }
 
-/* ===== FIX: seksjonsbasert Fortum-regel ===== */
 function parse(raw){
-    const text=raw.toLowerCase().replace(/,/g,".").replace(/kwt/g,"kwh").replace(/\s+/g," ");
+    let text=raw.toLowerCase().replace(/,/g,".").replace(/kwt/g,"kwh").replace(/kw h/g,"kwh").replace(/ø/g,"o").replace(/l/g,"1").replace(/\s+/g," ").trim();
 
     let forbruk=null;
     let påslag=null;
     let mnd=null;
 
-    const strømSectionMatch=text.match(/strøm fra fortum strøm([\s\S]{0,1200}?)(tilleggstjenester|sum strøm|nett)/);
-    const strømSection=strømSectionMatch ? strømSectionMatch[1] : "";
+    // Provider detection
+    const isFortum = text.includes('fortum');
 
-    const kwh=[...text.matchAll(/(\d{2,6}(?:\.\d{1,3})?)\s*kwh/g)];
-    for(const m of kwh){
-        const v=parseFloat(m[1]);
-        if(v>100){ forbruk=v; break; }
+    if (isFortum) {
+        // Keep your Fortum-specific logic
+        const strømSectionMatch=text.match(/strøm fra fortum strøm([\s\S]{0,1200}?)(tilleggstjenester|sum strøm|nett)/);
+        const strømSection=strømSectionMatch ? strømSectionMatch[1] : "";
+        const mndMatch=strømSection.match(/fastbeløp[\s\S]{0,80}?(\d{1,3}(?:\.\d{2})?)\s*kr/);
+        if(mndMatch) mnd=parseFloat(mndMatch[1]);
     }
 
-    const p=[...text.matchAll(/påslag[\s\S]{0,300}?(\d{1,2}(?:\.\d{1,2})?)\s*øre/g)];
-    if(p.length) påslag=parseFloat(p[p.length-1][1]);
+    // General kWh consumption: find numbers >100 followed by kwh
+    const kwhMatches = [...text.matchAll(/(\d{2,6}(?:\.\d{1,3})?)\s*kwh/g)];
+    let candidates = kwhMatches.map(m => parseFloat(m[1])).filter(v => v > 100);
+    if (candidates.length) {
+        forbruk = Math.max(...candidates); // Take the largest plausible usage
+    }
 
-    const mndMatch=strømSection.match(/fastbeløp[\s\S]{0,80}?(\d{1,3}(?:\.\d{2})?)\s*kr/);
-    if(mndMatch) mnd=parseFloat(mndMatch[1]);
+    // Improved påslag matching with keywords
+    const markupRegex = /(p.slag|tillegg|avanse|påslag per kwh|øre per kwh|påslag øre|tillegg øre)[\s\S]{0,100}?(\d{1,3}(?:\.\d{1,2})?)[\s\S]{0,50}?(øre|ore|o|kr)[\s\S]{0,50}?(per|pr|\s)?(kwh|kw h|kw)/gi;
+    const markupMatches = [...text.matchAll(markupRegex)];
+    if (markupMatches.length) {
+        // Take the last or smallest typical påslag (usually 1-10 øre)
+        const values = markupMatches.map(m => parseFloat(m[2])).filter(v => v > 0 && v < 50);
+        if (values.length) påslag = values[values.length - 1];
+    }
 
-    return{forbruk,påslag,mnd};
+    // Improved monthly fee matching with keywords
+    const monthlyRegex = /(m.nedsavgift|fastbel.p|abonnement|fastpris|fastledd|m.nedsbel.p|m.nedlig avgift|fast m.nedsbel.p|abonnementsavgift)[\s\S]{0,100}?(\d{1,3}(?:\.\d{1,2})?)[\s\S]{0,50}?kr/gi;
+    const monthlyMatches = [...text.matchAll(monthlyRegex)];
+    if (monthlyMatches.length) {
+        const values = monthlyMatches.map(m => parseFloat(m[2])).filter(v => v > 0 && v < 200); // Typical 20-100 kr
+        if (values.length) mnd = values[values.length - 1];
+    }
+
+    return{forbruk, påslag, mnd};
 }
 
 function fillFields(d){
     results.style.display="block";
 
-    inpForbruk.value=d.forbruk||"";
+    inpForbruk.value=d.forbruk ? d.forbruk.toFixed(0) : "";
     warnForbruk.style.display=d.forbruk?"none":"block";
 
-    inpPåslag.value=d.påslag||"";
+    inpPåslag.value=d.påslag ? d.påslag.toFixed(2) : "";
     warnPåslag.style.display=d.påslag?"none":"block";
 
-    inpMnd.value=d.mnd||"";
+    inpMnd.value=d.mnd ? d.mnd.toFixed(0) : "";
     warnMnd.style.display=d.mnd?"none":"block";
 }
 
