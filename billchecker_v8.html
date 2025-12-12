@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v8.2</title>
+<title>Tibber Fakturaanalyse v8.3</title>
 
 <style>
 @font-face {
@@ -149,6 +149,7 @@ input.valueField{
     display:none;
     font-size:.95rem;
     color:#ccc;
+    line-height:1.45;
 }
 </style>
 </head>
@@ -311,6 +312,25 @@ function compareNow(){
 }
 
 function toggleDetails(){
+    const f=+inpForbruk.value||0;
+    const p=+inpPåslag.value||0;
+    const m=+inpMnd.value||0;
+
+    const dineTotal=(f*p/100+m).toFixed(2);
+    const tibTotal =(f*3.4/100+49).toFixed(2);
+
+    detailsBox.innerHTML=`
+        <strong>Din nåværende avtale</strong><br>
+        Påslag: ${p} øre per kWh<br>
+        Månedsavgift: ${m} kr<br>
+        Total basert på ${f} kWh: <strong>${dineTotal} kr</strong><br><br>
+
+        <strong>Med Tibber</strong><br>
+        Påslag: 3,4 øre per kWh<br>
+        Månedsavgift: 49 kr<br>
+        Total basert på ${f} kWh: <strong>${tibTotal} kr</strong>
+    `;
+
     detailsBox.style.display =
         detailsBox.style.display==="block" ? "none" : "block";
 }
