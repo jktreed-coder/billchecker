@@ -164,31 +164,33 @@ input.valueField {
 >
 
 <h1>Fakturaanalyse</h1>
-<h3>Sjekk om du kan spare med Tibber! Vår fakturaanalyse sjekker din strømregning på sekunder.</h3>
+<h3>Sjekk om du kan spare med Tibber! <br> Vår fakturaanalyse ser over strømregningen din og gir deg svaret på sekunder.</h3>
 
 <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png"><br>
 <button class="button" onclick="processFile()">Beregn</button>
 
 <p style="font-size:0.85rem;color:#aaa;max-width:520px;margin:12px auto 0;">
 Regningen behandles kun lokalt i nettleseren din. Ingen filer eller data lagres eller sendes til Tibber eller tredjeparter.
-</p>
+</p> 
+
+<p style="font-size:0.85rem;color:#aaa;max-width:520px;margin:12px auto 0;"> Last opp en detaljert kopi av strømregningen din hvor påslag og evt. månedsavgift er tydelig. Om systemet ikke finner detaljene, kan du fylle inn manuelt under neste steg.</p>
 
 <div id="spinner" class="spinner"></div>
 
 <div id="results">
-    <div class="title">Funnet i regningen</div>
+    <div class="title">Funnet i strømregningen</div>
 
     Forbruk (kWh):
     <input id="inpForbruk" class="valueField"><br>
-    <div id="warnForbruk" class="warn" style="display:none;">Ikke funnet i faktura</div>
+    <div id="warnForbruk" class="warn" style="display:none;">Ikke funnet i strømregning – fyll inn manuelt</div>
 
     Påslag (øre per kWh):
     <input id="inpPåslag" class="valueField"><br>
-    <div id="warnPåslag" class="warn" style="display:none;">Ikke funnet i faktura</div>
+    <div id="warnPåslag" class="warn" style="display:none;">Ikke funnet i strømregning – fyll inn manuelt</div>
 
     Månedsavgift (kr):
     <input id="inpMnd" class="valueField"><br>
-    <div id="warnMnd" class="warn" style="display:none;">Ikke funnet i faktura</div>
+    <div id="warnMnd" class="warn" style="display:none;">Ikke funnet i strømregning – fyll inn manuelt</div>
 
     <button class="button compareBtn" onclick="compareNow()">Sammenlign med Tibber</button>
 </div>
