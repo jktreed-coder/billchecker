@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v8.3</title>
+<title>Tibber Fakturaanalyse v8.4</title>
 
 <style>
 @font-face {
@@ -251,45 +251,45 @@ async function extractImage(f){
     return r.data.text;
 }
 
-/* ---------------- LABEL-DRIVEN PARSER ---------------- */
+/* ===== SMART PARSER ===== */
 
-function normalize(t){
-    return t
+function parse(text){
+    const lines = text
         .toLowerCase()
         .replace(/kwt/g,"kwh")
-        .replace(/\s+/g," ");
-}
-
-function parse(t){
-    const lines = normalize(t).split(/\n+/);
+        .replace(/,/g,".")
+        .split(/\n+/)
+        .map(l=>l.trim())
+        .filter(Boolean);
 
     let forbruk=null, påslag=null, mnd=null;
 
-    for(const l of lines){
+    for(let i=0;i<lines.length;i++){
+        const block = `${lines[i]} ${lines[i+1]||""} ${lines[i+2]||""}`;
 
         if(!forbruk){
-            const r=l.match(/(\d[\d.,]*)\s*kwh/);
-            if(r) forbruk=parseFloat(r[1].replace(",","."));
+            const r = block.match(/(\d{2,6}\.\d{1,3})\s*kwh/);
+            if(r) forbruk=parseFloat(r[1]);
         }
 
-        if(!påslag && /påslag/.test(l) && /øre/.test(l) && !/nettleie|enova/.test(l)){
-            const r=l.match(/(\d[\d.,]*)\s*øre/);
+        if(!påslag && /påslag/.test(block)){
+            const r = block.match(/(\d{1,3}\.\d{1,3})\s*øre/);
             if(r){
-                const v=parseFloat(r[1].replace(",","."));
-                if(v>=2 && v<=20) påslag=v;
+                const v=parseFloat(r[1]);
+                if(v>0 && v<20) påslag=v;
             }
         }
 
-        if(!mnd && /månedsavgift|månedspris|fastbeløp|abonnementsavgift|abonnement|administrasjon|tibber-abonnement/.test(l) && /kr/.test(l) && !/kwh/.test(l)){
-            const r=l.match(/(\d[\d.,]*)\s*kr/);
-            if(r) mnd=parseFloat(r[1].replace(",","."));
+        if(!mnd && /(abonnement|månedsavgift|fastbeløp|fastpris|grunnbeløp|administrasjon)/.test(block)){
+            const r = block.match(/(\d{1,4}\.\d{0,2})\s*kr/);
+            if(r) mnd=parseFloat(r[1]);
         }
     }
 
-    return { forbruk, påslag, mndavg:mnd };
+    return {forbruk,påslag,mndavg:mnd};
 }
 
-/* ---------------- UI ---------------- */
+/* ===== UI ===== */
 
 function fillFields(d){
     results.style.display="block";
@@ -324,20 +324,18 @@ function toggleDetails(){
     const p=+inpPåslag.value||0;
     const m=+inpMnd.value||0;
 
-    const dineTotal=(f*p/100+m).toFixed(2);
-    const tibTotal =(f*3.4/100+49).toFixed(2);
-
     detailsBox.innerHTML=`
         <strong>Din nåværende avtale</strong><br>
         Påslag: ${p} øre per kWh<br>
         Månedsavgift: ${m} kr<br>
-        Total basert på ${f} kWh: <strong>${dineTotal} kr</strong><br><br>
+        Total basert på ${f} kWh: <strong>${(f*p/100+m).toFixed(2)} kr</strong><br><br>
 
         <strong>Med Tibber</strong><br>
         Påslag: 3,4 øre per kWh<br>
         Månedsavgift: 49 kr<br>
-        Total basert på ${f} kWh: <strong>${tibTotal} kr</strong>
+        Total basert på ${f} kWh: <strong>${(f*3.4/100+49).toFixed(2)} kr</strong>
     `;
+
     detailsBox.style.display =
         detailsBox.style.display==="block" ? "none" : "block";
 }
