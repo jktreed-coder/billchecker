@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v11.3</title>
+<title>Tibber Fakturaanalyse v11.4</title>
 
 <style>
 @font-face{
@@ -170,9 +170,7 @@ Last opp en detaljert kopi av strømregningen din.
 <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none">
 
 <div class="fileHint" id="fileHint">
-Støttede filtyper: .jpg, .png, .pdf<br>
-All data behandles kun lokalt i nettleseren din. <br>
-Ingen filer lagres eller sendes videre.
+Ingen fil valgt
 </div>
 
 <br><br>
@@ -218,6 +216,7 @@ kWh-forbruk kommer i tillegg.
 
 <script>
 const fileInput=document.getElementById("fileInput");
+const fileHint=document.getElementById("fileHint");
 const spinner=document.getElementById("spinner");
 const results=document.getElementById("results");
 const comparisonBox=document.getElementById("comparisonBox");
@@ -232,8 +231,16 @@ const warnForbruk=document.getElementById("warnForbruk");
 const warnPåslag=document.getElementById("warnPåslag");
 const warnMnd=document.getElementById("warnMnd");
 
+fileInput.addEventListener("change",()=>{
+    if(fileInput.files.length){
+        fileHint.textContent="Valgt fil: "+fileInput.files[0].name;
+    }else{
+        fileHint.textContent="Ingen fil valgt";
+    }
+});
+
 async function processFile(){
-    if(!fileInput.files[0])return;
+    if(!fileInput.files[0]) return;
     spinner.style.display="block";
 
     let text="";
@@ -262,17 +269,11 @@ async function extractImage(f){
     return r.data.text;
 }
 
-/* ===== PARSER ===== */
-
 function parse(raw){
-    const text=raw.toLowerCase()
-        .replace(/,/g,".")
-        .replace(/kwt/g,"kwh")
-        .replace(/\s+/g," ");
+    const text=raw.toLowerCase().replace(/,/g,".").replace(/kwt/g,"kwh").replace(/\s+/g," ");
 
     let forbruk=null;
     let påslag=null;
-    let påslagKwh=null;
     let mnd=null;
 
     const mndMatch=text.match(/(\d{1,3}(?:\.\d{1,2})?)\s*kr\/?mnd/);
@@ -284,16 +285,11 @@ function parse(raw){
         if(v>100){ forbruk=v; break; }
     }
 
-    /* === FIX: Fjordkraft påslag === */
     const p=[...text.matchAll(/påslag[\s\S]{0,300}?(\d{1,2}(?:\.\d{1,2})?)\s*øre\s*\/?\s*kwh/g)];
-    if(p.length){
-        påslag=parseFloat(p[p.length-1][1]);
-    }
+    if(p.length) påslag=parseFloat(p[p.length-1][1]);
 
-    return{forbruk,påslag,påslagKwh,mnd};
+    return{forbruk,påslag,mnd};
 }
-
-/* ===== UI ===== */
 
 function fillFields(d){
     results.style.display="block";
