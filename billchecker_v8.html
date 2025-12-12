@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v11.1</title>
+<title>Tibber Fakturaanalyse v11.2</title>
 
 <style>
 @font-face{
@@ -226,33 +226,17 @@ const warnForbruk = document.getElementById("warnForbruk");
 const warnPåslag = document.getElementById("warnPåslag");
 const warnMnd = document.getElementById("warnMnd");
 
-fileInput.addEventListener("change",()=>{
-    if(fileInput.files.length){
-        fileHint.textContent=fileInput.files[0].name;
-    }
-});
-
-function showSpinner(x){
-    spinner.style.display = x ? "block" : "none";
-}
-
 async function processFile(){
     if(!fileInput.files[0]) return;
-    showSpinner(true);
+    spinner.style.display="block";
 
-    try{
-        let text="";
-        const f=fileInput.files[0];
+    let text="";
+    const f=fileInput.files[0];
+    if(f.type==="application/pdf") text = await extractPDF(f);
+    else text = await extractImage(f);
 
-        if(f.type==="application/pdf") text = await extractPDF(f);
-        else text = await extractImage(f);
-
-        fillFields(parse(text));
-    }catch(e){
-        console.error(e);
-    }finally{
-        showSpinner(false);
-    }
+    fillFields(parse(text));
+    spinner.style.display="none";
 }
 
 async function extractPDF(f){
@@ -262,7 +246,7 @@ async function extractPDF(f){
     for(let i=1;i<=pdf.numPages;i++){
         const p=await pdf.getPage(i);
         const c=await p.getTextContent();
-        out+=c.items.map(t=>t.str).join(" ")+"\n";
+        out+=c.items.map(t=>t.str).join(" ")+" ";
     }
     return out;
 }
@@ -272,7 +256,6 @@ async function extractImage(f){
     return r.data.text;
 }
 
-/* UPDATED PARSER ONLY */
 function parse(raw){
     const text = raw.toLowerCase()
         .replace(/,/g,".")
@@ -283,23 +266,17 @@ function parse(raw){
     let påslag=null;
     let mnd=null;
 
-    const mndMatch = text.match(/(\d{1,3}(?:\.\d{1,2})?)\s*kr\s*\/?\s*(mnd|måned)/);
-    if(mndMatch) mnd = parseFloat(mndMatch[1]);
+    const mndMatch = text.match(/(\d{1,3}(?:\.\d{1,2})?)\s*kr\s*(\/|per)?\s*(mnd|måned)/);
+    if(mndMatch) mnd=parseFloat(mndMatch[1]);
 
-    const kwhMatches=[...text.matchAll(/(\d{2,6}(?:\.\d{1,3})?)\s*kwh/g)];
-    for(const m of kwhMatches){
+    const kwh=[...text.matchAll(/(\d{2,6}(?:\.\d{1,3})?)\s*kwh/g)];
+    for(const m of kwh){
         const v=parseFloat(m[1]);
-        if(v>100 && v<100000){
-            forbruk=v;
-            break;
-        }
+        if(v>100){ forbruk=v; break; }
     }
 
-    const påslagBlock = text.match(/(leverandørpåslag|energipåslag|påslag)[\s\S]{0,400}/);
-    if(påslagBlock){
-        const val = påslagBlock[0].match(/(\d{1,2}(?:\.\d{1,2})?)\s*øre\s*(\/|per|pr)?\s*kwh/);
-        if(val) påslag = parseFloat(val[1]);
-    }
+    const p=[...text.matchAll(/påslag[\s\S]{0,200}?(\d{1,2}(?:\.\d{1,2})?)\s*øre\s*\/?\s*kwh/g)];
+    if(p.length) påslag=parseFloat(p[p.length-1][1]);
 
     return {forbruk,påslag,mnd};
 }
@@ -308,19 +285,19 @@ function fillFields(d){
     results.style.display="block";
 
     inpForbruk.value=d.forbruk||"";
-    warnForbruk.style.display=d.forbruk?"none":"block";
+    warnForbruk.style.display=d.forbruk!==null?"none":"block";
 
     inpPåslag.value=d.påslag||"";
-    warnPåslag.style.display=d.påslag?"none":"block";
+    warnPåslag.style.display=d.påslag!==null?"none":"block";
 
     inpMnd.value=d.mnd||"";
-    warnMnd.style.display=d.mnd?"none":"block";
+    warnMnd.style.display=d.mnd!==null?"none":"block";
 }
 
 function compareNow(){
-    const f = parseFloat(inpForbruk.value.replace(",", ".")) || 0;
-    const p = parseFloat(inpPåslag.value.replace(",", ".")) || 0;
-    const m = parseFloat(inpMnd.value.replace(",", ".")) || 0;
+    const f=parseFloat(inpForbruk.value)||0;
+    const p=parseFloat(inpPåslag.value)||0;
+    const m=parseFloat(inpMnd.value)||0;
 
     const diff=f*p/100+m-(f*3.4/100+49);
 
@@ -332,7 +309,18 @@ function compareNow(){
     comparisonBox.style.display="block";
 }
 
-function toggleDetails(){}
+function toggleDetails(){
+    detailsBox.style.display =
+        detailsBox.style.display==="block"?"none":"block";
+
+    detailsBox.innerHTML=`
+    <strong>Slik regner vi:</strong><br><br>
+    Nåværende avtale:<br>
+    Forbruk × påslag + månedsavgift<br><br>
+    Tibber:<br>
+    Forbruk × 3,4 øre + 49 kr
+    `;
+}
 </script>
 </body>
 </html>
