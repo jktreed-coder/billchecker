@@ -162,7 +162,7 @@ style="width:50%;max-width:360px;margin-bottom:24px">
 
 <h1>Fakturaanalyse</h1>
 <h3>
-Sjekk om du kan spare med Tibber. Strømregningen behandles kun lokalt i nettleseren din.
+Sjekk om du kan spare med Tibber! <br> Last opp en kopi av strømregningen din som viser påslag og evt. månedspris.
 </h3>
 
 <label for="fileInput" class="uploadBtn">Last opp strømregning</label>
@@ -170,7 +170,7 @@ Sjekk om du kan spare med Tibber. Strømregningen behandles kun lokalt i nettles
 
 <div class="fileHint" id="fileHint">
 Støttede filtyper: .jpg, .png, .pdf<br>
-Ingen filer lagres eller sendes videre.
+Strømregningen behandles kun lokalt i nettleseren din. Ingen filer lagres eller sendes videre.
 </div>
 
 <button class="button" onclick="processFile()">Beregn</button>
@@ -182,15 +182,15 @@ Ingen filer lagres eller sendes videre.
 
 Forbruk kWh<br>
 <input id="inpForbruk" class="valueField"><br>
-<div id="warnForbruk" class="warn">Ikke funnet automatisk</div>
+<div id="warnForbruk" class="warn">Ikke funnet automatisk - fyll inn manuelt</div>
 
 Påslag øre per kWh<br>
 <input id="inpPåslag" class="valueField"><br>
-<div id="warnPåslag" class="warn">Ikke funnet automatisk</div>
+<div id="warnPåslag" class="warn">Ikke funnet automatisk - fyll inn manuelt</div>
 
 Månedsavgift kr<br>
 <input id="inpMnd" class="valueField"><br>
-<div id="warnMnd" class="warn">Ikke funnet automatisk</div>
+<div id="warnMnd" class="warn">Ikke funnet automatisk - fyll inn manuelt</div>
 
 <button class="button" onclick="compareNow()">Sammenlign med Tibber</button>
 </div>
@@ -202,7 +202,7 @@ Månedsavgift kr<br>
     
 <div id="detailsBox"></div>
     <div style="margin-top:6px;font-size:.8rem;color:#888;">
-Viser kun hva du betaler totalt i påslag og månedsavgift
+Viser kun hva du betaler totalt i påslag og månedsavgift. <br>kWh-forbruk kommer i tillegg.
 </div>
 </div>
 
@@ -312,7 +312,7 @@ function compareNow(){
     comparisonResult.innerHTML=
         diff>0
         ? `<div class="green">Du kan betale mindre med Tibber</div>Du sparer ${diff.toFixed(0)} kr per måned`
-        : `<div class="red">Tibber blir dyrere</div>`;
+        : `<div class="red">Tibber er litt dyrere, men...</div>`;
 
     comparisonBox.style.display="block";
 }
