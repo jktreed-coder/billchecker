@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v11.8</title>
+<title>Tibber Fakturaanalyse v11.9</title>
 
 <style>
 @font-face{font-family:"Silka";src:url("Silka-Regular.woff2") format("woff2"),url("Silka-Regular.woff") format("woff");font-weight:400;}
@@ -165,44 +165,56 @@ async function extractImage(f){
 }
 
 function parse(raw){
-    let text=raw.toLowerCase().replace(/,/g,".").replace(/kwt/g,"kwh").replace(/kw h/g,"kwh").replace(/ø/g,"o").replace(/l/g,"1").replace(/\s+/g," ").trim();
+    let text=raw.toLowerCase().replace(/,/g,".").replace(/kwt/g,"kwh").replace(/kw h/g,"kwh").replace(/ø/g,"o").replace(/l/g,"1").replace(/o/g,"0").replace(/\s+/g," ").trim(); // Added more OCR fixes
 
     let forbruk=null;
     let påslag=null;
     let mnd=null;
 
     // Provider detection
-    const isFortum = text.includes('fortum');
+    const providers = {
+        fortum: text.includes('fortum'),
+        fjordkraft: text.includes('fjordkraft'),
+        lyse: text.includes('lyse'),
+        hafslund: text.includes('hafslund'),
+        bkk: text.includes('bkk')
+    };
 
-    if (isFortum) {
-        // Keep your Fortum-specific logic
+    if (providers.fortum) {
         const strømSectionMatch=text.match(/strøm fra fortum strøm([\s\S]{0,1200}?)(tilleggstjenester|sum strøm|nett)/);
         const strømSection=strømSectionMatch ? strømSectionMatch[1] : "";
         const mndMatch=strømSection.match(/fastbeløp[\s\S]{0,80}?(\d{1,3}(?:\.\d{2})?)\s*kr/);
         if(mndMatch) mnd=parseFloat(mndMatch[1]);
-    }
+    } // Add similar for other providers if specific patterns known
 
-    // General kWh consumption: find numbers >100 followed by kwh
-    const kwhMatches = [...text.matchAll(/(\d{2,6}(?:\.\d{1,3})?)\s*kwh/g)];
-    let candidates = kwhMatches.map(m => parseFloat(m[1])).filter(v => v > 100);
+    // General kWh consumption: look near keywords like forbruk, total, energi
+    const kwhRegex = /(forbruk|total|energi|strømforbruk|konsum|bruk)[\s\S]{0,100}?(\d{2,6}(?:\.\d{1,3})?)[\s\S]{0,50}?kwh/gi;
+    const kwhMatches = [...text.matchAll(kwhRegex)];
+    let candidates = kwhMatches.map(m => parseFloat(m[2])).filter(v => v > 100);
     if (candidates.length) {
-        forbruk = Math.max(...candidates); // Take the largest plausible usage
+        forbruk = Math.max(...candidates); // Largest plausible
+    } else {
+        // Fallback to any large kWh
+        const fallbackKwh = [...text.matchAll(/(\d{2,6}(?:\.\d{1,3})?)\s*kwh/g)];
+        candidates = fallbackKwh.map(m => parseFloat(m[1])).filter(v => v > 100);
+        if (candidates.length) forbruk = Math.max(...candidates);
     }
 
-    // Improved påslag matching with keywords
-    const markupRegex = /(p.slag|tillegg|avanse|påslag per kwh|øre per kwh|påslag øre|tillegg øre)[\s\S]{0,100}?(\d{1,3}(?:\.\d{1,2})?)[\s\S]{0,50}?(øre|ore|o|kr)[\s\S]{0,50}?(per|pr|\s)?(kwh|kw h|kw)/gi;
+    // Expanded påslag matching
+    const markupKeywords = ['p.slag', 'påslag', 'tillegg', 'supplement', 'surcharge', 'mark', 'markup', 'avanse', 'øre per kwh', 'påslag per kwh', 'tillegg øre', 'påslag øre'];
+    const markupRegex = new RegExp(`(${markupKeywords.join('|')})[\\s\\S]{0,100}?(\\d{1,3}(?:\\.\\d{1,2})?)[\\s\\S]{0,50}?(øre|ore|o|kr|per|pr|\\s)?(kwh|kw h|kw|per kwh)`, 'gi');
     const markupMatches = [...text.matchAll(markupRegex)];
     if (markupMatches.length) {
-        // Take the last or smallest typical påslag (usually 1-10 øre)
         const values = markupMatches.map(m => parseFloat(m[2])).filter(v => v > 0 && v < 50);
-        if (values.length) påslag = values[values.length - 1];
+        if (values.length) påslag = values[values.length - 1]; // Last match
     }
 
-    // Improved monthly fee matching with keywords
-    const monthlyRegex = /(m.nedsavgift|fastbel.p|abonnement|fastpris|fastledd|m.nedsbel.p|m.nedlig avgift|fast m.nedsbel.p|abonnementsavgift)[\s\S]{0,100}?(\d{1,3}(?:\.\d{1,2})?)[\s\S]{0,50}?kr/gi;
+    // Expanded monthly fee matching
+    const monthlyKeywords = ['m.nedsavgift', 'månedsavgift', 'fastbel.p', 'fastbeløp', 'abonnement', 'fastpris', 'fastledd', 'm.nedsbel.p', 'månedlig avgift', 'fast m.nedsbel.p', 'abonnementsavgift', 'fixed monthly', 'månedsbeløp'];
+    const monthlyRegex = new RegExp(`(${monthlyKeywords.join('|')})[\\s\\S]{0,100}?(\\d{1,3}(?:\\.\\d{2})?)[\\s\\S]{0,50}?kr`, 'gi');
     const monthlyMatches = [...text.matchAll(monthlyRegex)];
     if (monthlyMatches.length) {
-        const values = monthlyMatches.map(m => parseFloat(m[2])).filter(v => v > 0 && v < 200); // Typical 20-100 kr
+        const values = monthlyMatches.map(m => parseFloat(m[2])).filter(v => v > 0 && v < 200);
         if (values.length) mnd = values[values.length - 1];
     }
 
