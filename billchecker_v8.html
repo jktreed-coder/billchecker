@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v10.6</title>
+<title>Tibber Fakturaanalyse v10.7</title>
 
 <style>
 @font-face{
@@ -157,12 +157,24 @@ input.valueField{
 <body>
 <div class="container">
 
+<img src="https://images.ctfassets.net/zq85bj8o2ot3/3pxy6auNcSHUkZJmPJEegu/d4652795a22a6cc0fe3dd6f753358a7a/Tibber_Logotype_1080x500_White.png?h=250"
+style="width:50%;max-width:360px;margin-bottom:24px">
+
 <h1>Fakturaanalyse</h1>
+<h3>
+Sjekk om du kan spare med Tibber! <br> Last opp en detaljert kopi av strømregningen din.
+</h3>
 
 <label for="fileInput" class="uploadBtn">Last opp strømregning</label>
 <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none">
 
+<div class="fileHint" id="fileHint">
+Støttede filtyper: .jpg, .png, .pdf<br>
+All data behandles kun lokalt i nettleseren din. <br> Ingen filer lagres eller sendes videre.
+</div>
+
 <br><br>
+
 <button class="button" onclick="processFile()">Beregn</button>
 
 <div id="spinner" class="spinner"></div>
@@ -172,12 +184,28 @@ input.valueField{
 
 Forbruk kWh<br>
 <input id="inpForbruk" class="valueField"><br>
+<div id="warnForbruk" class="warn">Ikke funnet automatisk - fyll inn manuelt</div>
 
 Påslag øre per kWh<br>
 <input id="inpPåslag" class="valueField"><br>
+<div id="warnPåslag" class="warn">Ikke funnet automatisk - fyll inn manuelt</div>
 
 Månedsavgift kr<br>
 <input id="inpMnd" class="valueField"><br>
+<div id="warnMnd" class="warn">Ikke funnet automatisk - fyll inn manuelt</div>
+
+<button class="button" onclick="compareNow()">Sammenlign med Tibber</button>
+</div>
+
+<div id="comparisonBox">
+<div class="title">Sammenligning</div>
+<div id="comparisonResult"></div>
+<div class="toggleExplain" onclick="toggleDetails()">Vis detaljert forklaring</div>
+
+<div id="detailsBox"></div>
+<div style="margin-top:6px;font-size:.8rem;color:#888;">
+Viser kun hva du betaler totalt i påslag og månedsavgift. <br>kWh-forbruk kommer i tillegg.
+</div>
 </div>
 
 </div>
@@ -189,10 +217,23 @@ Månedsavgift kr<br>
 const fileInput = document.getElementById("fileInput");
 const spinner = document.getElementById("spinner");
 const results = document.getElementById("results");
+const comparisonBox = document.getElementById("comparisonBox");
+const comparisonResult = document.getElementById("comparisonResult");
+const detailsBox = document.getElementById("detailsBox");
 
 const inpForbruk = document.getElementById("inpForbruk");
 const inpPåslag = document.getElementById("inpPåslag");
 const inpMnd = document.getElementById("inpMnd");
+
+const warnForbruk = document.getElementById("warnForbruk");
+const warnPåslag = document.getElementById("warnPåslag");
+const warnMnd = document.getElementById("warnMnd");
+
+fileInput.addEventListener("change",()=>{
+    if(fileInput.files.length){
+        fileHint.textContent=fileInput.files[0].name;
+    }
+});
 
 function showSpinner(x){
     spinner.style.display=x?"block":"none";
@@ -204,6 +245,7 @@ async function processFile(){
 
     let text="";
     const f=fileInput.files[0];
+
     if(f.type==="application/pdf") text=await extractPDF(f);
     else text=await extractImage(f);
 
@@ -233,32 +275,85 @@ async function extractImage(f){
 function parse(raw){
     const text=raw.toLowerCase().replace(/,/g,".").replace(/kwt/g,"kwh");
 
+    const isVibb = text.includes("vibb") || text.includes("app+");
+    const isFjordkraft = text.includes("fjordkraft");
+
     let forbruk=null;
     let påslag=null;
     let påslagKwh=null;
     let mnd=null;
 
+    const mndMatch=text.match(/(\d{1,3}(?:\.\d{1,2})?)\s*kr\/?mnd|månedlig\s+fastbeløp\s+(\d{1,3}(?:\.\d{1,2})?)/);
+    if(mndMatch){
+        mnd=parseFloat((mndMatch[1]||mndMatch[2]));
+    }
+
+    if(!mnd){
+        const fortumMatch=text.match(/fastbeløp[\s\S]{0,40}?(\d{1,3}(?:\.\d{1,2})?)[\s\S]{0,40}?per\s+mån/);
+        if(fortumMatch){
+            mnd=parseFloat(fortumMatch[1]);
+        }
+    }
+
     const kwhMatches=[...text.matchAll(/(\d{2,6}(?:\.\d{1,3})?)\s*kwh/g)];
-    if(kwhMatches.length) forbruk=parseFloat(kwhMatches[0][1]);
+    for(const m of kwhMatches){
+        const v=parseFloat(m[1]);
+        if(v>100 && v<100000){
+            forbruk=v;
+            break;
+        }
+    }
 
-    const mndMatch=text.match(/(\d{1,3}(?:\.\d{1,2})?)\s*kr\/?mnd/);
-    if(mndMatch) mnd=parseFloat(mndMatch[1]);
+    /* === FIXED FJORDKRAFT PARSER (ONLY CHANGE) === */
+    if(isFjordkraft){
+        const m = text.match(/påslag[\s\S]{0,80}?(\d{1,2}(?:\.\d{1,2})?)\s*øre\/?kwh/);
+        if(m){
+            påslag = parseFloat(m[1]);
+            påslagKwh = null;
+        }
+    }
 
-    /* FIXED FJORDKRAFT PARSER */
-    const fkMatch = text.match(/påslag[\s\S]{0,80}?(\d{1,2}(?:\.\d{1,2})?)\s*øre\/?kwh/);
-    if(fkMatch){
-        påslag = parseFloat(fkMatch[1]);
-        påslagKwh = null;
+    if(!isVibb && !isFjordkraft){
+        const påslagLineMatch=text.match(/påslag[\s\S]{0,60}?(\d{2,6})\s*kwh[\s\S]{0,60}?(\d{1,2}(?:\.\d{1,2})?)\s*øre(?:\/kwh)?/);
+        if(påslagLineMatch){
+            påslagKwh=parseFloat(påslagLineMatch[1]);
+            påslag=parseFloat(påslagLineMatch[2]);
+        }
+    }
+
+    if(isVibb){
+        påslag=0;
+        påslagKwh=null;
+    }
+
+    /* ===== FALLBACK HEURISTIC ===== */
+
+    if(påslag === null){
+        const candidates=[];
+        const oreMatches=[...text.matchAll(/(\d{1,2}(?:\.\d{1,2})?)\s*øre\/?kwh/g)];
+
+        for(const m of oreMatches){
+            const value=parseFloat(m[1]);
+            const idx=m.index||0;
+            const context=text.substring(Math.max(0,idx-80),idx+80);
+
+            if(
+                context.includes("din strømpris") ||
+                context.includes("spotpris") ||
+                context.includes("norgespris") ||
+                context.includes("energiledd")
+            ) continue;
+
+            if(value>0 && value<15) candidates.push(value);
+        }
+
+        if(candidates.length===1){
+            påslag=candidates[0];
+            påslagKwh=null;
+        }
     }
 
     return{forbruk,påslag,påslagKwh,mnd};
-}
-
-function fillFields(d){
-    results.style.display="block";
-    inpForbruk.value=d.forbruk||"";
-    inpPåslag.value=d.påslag||"";
-    inpMnd.value=d.mnd||"";
 }
 </script>
 </body>
