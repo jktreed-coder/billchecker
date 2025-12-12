@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v11.0</title>
+<title>Tibber Fakturaanalyse v11.1</title>
 
 <style>
 @font-face{
@@ -272,32 +272,36 @@ async function extractImage(f){
     return r.data.text;
 }
 
+/* UPDATED PARSER ONLY */
 function parse(raw){
-    const text = raw.toLowerCase().replace(/,/g,".").replace(/kwt/g,"kwh");
+    const text = raw.toLowerCase()
+        .replace(/,/g,".")
+        .replace(/kwt/g,"kwh")
+        .replace(/\s+/g," ");
 
     let forbruk=null;
     let påslag=null;
-    let påslagKwh=null;
     let mnd=null;
 
-    const mndMatch = text.match(/(\d{1,3}(?:\.\d{1,2})?)\s*kr\/?mnd/);
+    const mndMatch = text.match(/(\d{1,3}(?:\.\d{1,2})?)\s*kr\s*\/?\s*(mnd|måned)/);
     if(mndMatch) mnd = parseFloat(mndMatch[1]);
 
     const kwhMatches=[...text.matchAll(/(\d{2,6}(?:\.\d{1,3})?)\s*kwh/g)];
     for(const m of kwhMatches){
         const v=parseFloat(m[1]);
-        if(v>100 && v<100000){ forbruk=v; break; }
+        if(v>100 && v<100000){
+            forbruk=v;
+            break;
+        }
     }
 
-    const fjordkraftMatch = text.match(/påslag[\s\S]{0,80}?(\d{1,2}(?:\.\d{1,2})?)\s*øre\/?kwh/);
-    if(fjordkraftMatch){
-        påslag = parseFloat(fjordkraftMatch[1]);
-    }else{
-        const genericMatch = text.match(/påslag[\s\S]{0,60}?(\d{1,2}(?:\.\d{1,2})?)\s*øre/);
-        if(genericMatch) påslag = parseFloat(genericMatch[1]);
+    const påslagBlock = text.match(/(leverandørpåslag|energipåslag|påslag)[\s\S]{0,400}/);
+    if(påslagBlock){
+        const val = påslagBlock[0].match(/(\d{1,2}(?:\.\d{1,2})?)\s*øre\s*(\/|per|pr)?\s*kwh/);
+        if(val) påslag = parseFloat(val[1]);
     }
 
-    return {forbruk,påslag,påslagKwh,mnd};
+    return {forbruk,påslag,mnd};
 }
 
 function fillFields(d){
