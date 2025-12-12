@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v1.2</title>
+<title>Tibber Fakturaanalyse v1.3</title>
 
 <style>
 @font-face {
@@ -49,7 +49,6 @@ h3 { font-size: 1rem; color: #ccc; font-weight: 400; line-height: 1.45; margin-b
 }
 
 .uploadBtn { display: inline-block; margin-top: 20px; }
-
 .fileHint { margin-top: 10px; font-size: .85rem; color: #aaa; }
 
 .spinner {
@@ -124,15 +123,15 @@ h3 { font-size: 1rem; color: #ccc; font-weight: 400; line-height: 1.45; margin-b
 
     Forbruk kWh<br>
     <input id="inpForbruk" class="valueField"><br>
-    <div id="warnForbruk" class="warn">Ikke funnet automatisk fyll inn manuelt</div>
+    <div id="warnForbruk" class="warn">Ikke funnet automatisk. Fyll inn manuelt</div>
 
     Påslag øre per kWh<br>
     <input id="inpPåslag" class="valueField"><br>
-    <div id="warnPåslag" class="warn">Ikke funnet automatisk fyll inn manuelt</div>
+    <div id="warnPåslag" class="warn">Ikke funnet automatisk. Fyll inn manuelt</div>
 
     Månedsavgift kr<br>
     <input id="inpMnd" class="valueField"><br>
-    <div id="warnMnd" class="warn">Ikke funnet automatisk fyll inn manuelt</div>
+    <div id="warnMnd" class="warn">Ikke funnet automatisk. Fyll inn manuelt</div>
 
     <button class="button" onclick="compareNow()">Sammenlign med Tibber</button>
 </div>
@@ -152,6 +151,23 @@ h3 { font-size: 1rem; color: #ccc; font-weight: 400; line-height: 1.45; margin-b
 <script>
 const el = id => document.getElementById(id);
 
+const fileInput = el("fileInput");
+const fileHint = el("fileHint");
+const spinner = el("spinner");
+
+const results = el("results");
+const comparisonBox = el("comparisonBox");
+const comparisonResult = el("comparisonResult");
+const detailsBox = el("detailsBox");
+
+const inpForbruk = el("inpForbruk");
+const inpPåslag = el("inpPåslag");
+const inpMnd = el("inpMnd");
+
+const warnForbruk = el("warnForbruk");
+const warnPåslag = el("warnPåslag");
+const warnMnd = el("warnMnd");
+
 fileInput.addEventListener("change", () => {
     fileHint.textContent = fileInput.files.length
         ? "Valgt fil: " + fileInput.files[0].name
@@ -160,6 +176,7 @@ fileInput.addEventListener("change", () => {
 
 async function processFile() {
     if (!fileInput.files[0]) return;
+
     spinner.style.display = "block";
     let text = "";
     const file = fileInput.files[0];
@@ -170,14 +187,15 @@ async function processFile() {
         text = await extractImage(file);
     }
 
-   const res = await fetch("http://localhost:3000/analyze", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ invoice_text: text })
-});
+    const res = await fetch("http://localhost:3000/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoice_text: text })
+    });
 
-const data = await res.json();
-fillFields(data);
+    const data = await res.json();
+    fillFields(data);
+
     spinner.style.display = "none";
 }
 
@@ -213,44 +231,17 @@ async function extractImage(file) {
     return r.data.text;
 }
 
-function parse(raw) {
-    const text = raw.toLowerCase()
-        .replace(/,/g, ".")
-        .replace(/kwt/g, "kwh")
-        .replace(/\s+/g, " ");
-
-    let forbruk = null;
-    let påslag = null;
-    let mnd = null;
-
-    const kwhMatches = [...text.matchAll(/(\d{2,6}(?:\.\d+)?)\s*kwh/g)];
-    for (const m of kwhMatches) {
-        const v = parseFloat(m[1]);
-        if (v > 100) { forbruk = v; break; }
-    }
-
-    const påslagRegex = /(påslag|energipåslag|påslag inkl|inkl\.? elsertifikat)[^0-9]{0,80}(\d{1,2}(?:\.\d{1,2})?)\s*øre\/?kwh/;
-    const påslagMatch = text.match(påslagRegex);
-    if (påslagMatch) påslag = parseFloat(påslagMatch[2]);
-
-    const fastRegex = /(månedsavgift|fastbeløp|abonnement|månedlig fastbeløp)[^0-9]{0,80}(\d{1,3}(?:\.\d{2})?)\s*kr/;
-    const fastMatch = text.match(fastRegex);
-    if (fastMatch) mnd = parseFloat(fastMatch[2]);
-
-    return { forbruk, påslag, mnd };
-}
-
 function fillFields(d) {
     results.style.display = "block";
 
-    inpForbruk.value = d.forbruk ?? "";
-    warnForbruk.style.display = d.forbruk ? "none" : "block";
+    inpForbruk.value = d.forbruk_kwh ?? "";
+    warnForbruk.style.display = d.forbruk_kwh ? "none" : "block";
 
-    inpPåslag.value = d.påslag ?? "";
-    warnPåslag.style.display = d.påslag !== null ? "none" : "block";
+    inpPåslag.value = d.paslag_ore_per_kwh ?? "";
+    warnPåslag.style.display = d.paslag_ore_per_kwh !== null ? "none" : "block";
 
-    inpMnd.value = d.mnd ?? "";
-    warnMnd.style.display = d.mnd !== null ? "none" : "block";
+    inpMnd.value = d.manedsavgift_kr ?? "";
+    warnMnd.style.display = d.manedsavgift_kr !== null ? "none" : "block";
 }
 
 function compareNow() {
@@ -268,6 +259,15 @@ function compareNow() {
 }
 
 function toggleDetails() {
+    detailsBox.innerHTML = `
+        Din avtale<br>
+        Påslag ${inpPåslag.value} øre/kWh<br>
+        Månedsavgift ${inpMnd.value} kr<br><br>
+        Tibber<br>
+        Påslag 3.4 øre/kWh<br>
+        Månedsavgift 49 kr
+    `;
+
     detailsBox.style.display =
         detailsBox.style.display === "block" ? "none" : "block";
 }
