@@ -2,147 +2,205 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v12.1</title>
+<title>Tibber Fakturaanalyse v1.1</title>
 
 <style>
-@font-face{font-family:"Silka";src:url("Silka-Regular.woff2") format("woff2");font-weight:400;}
-@font-face{font-family:"Silka";src:url("Silka-SemiBold.woff2") format("woff2");font-weight:600;}
-
-body{
-    margin:0;
-    background:black;
-    color:white;
-    font-family:Silka,Inter,Arial,sans-serif;
-    display:flex;
-    justify-content:center;
-    padding:60px 20px;
+@font-face {
+    font-family: "Silka";
+    src: url("Silka-Regular.woff2") format("woff2"),
+         url("Silka-Regular.woff") format("woff");
+    font-weight: 400;
+}
+@font-face {
+    font-family: "Silka";
+    src: url("Silka-SemiBold.woff2") format("woff2"),
+         url("Silka-SemiBold.woff") format("woff");
+    font-weight: 600;
 }
 
-.container{
-    width:100%;
-    max-width:700px;
-    text-align:center;
+body {
+    margin: 0;
+    padding: 40px;
+    background: black;
+    color: white;
+    font-family: Silka, Inter, Arial, sans-serif;
+    display: flex;
+    justify-content: center;
 }
 
-h1{font-size:2.6rem;margin-bottom:10px;}
-h3{font-size:1.1rem;color:#aaa;font-weight:400;margin-bottom:40px;}
-
-.primaryBtn{
-    background:#1ED0E7;
-    color:black;
-    padding:16px 36px;
-    border-radius:999px;
-    font-weight:600;
-    cursor:pointer;
-    border:none;
-    font-size:1rem;
+.container {
+    width: 100%;
+    max-width: 650px;
+    text-align: center;
 }
 
-.secondaryBtn{
-    margin-top:14px;
-    background:#1ED0E7;
-    color:black;
-    padding:12px 28px;
-    border-radius:999px;
-    font-weight:600;
-    cursor:pointer;
-    border:none;
+h1 {
+    font-size: 2.2rem;
+    margin-bottom: 6px;
 }
 
-.spinner{
-    display:none;
-    width:40px;
-    height:40px;
-    margin:30px auto;
-    border:4px solid rgba(255,255,255,.2);
-    border-top:4px solid #1ED0E7;
-    border-radius:50%;
-    animation:spin .9s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.card{
-    margin-top:50px;
-    background:linear-gradient(145deg,#111,#0a0a0a);
-    padding:36px;
-    border-radius:24px;
-    text-align:left;
-    display:none;
+h3 {
+    font-size: 1rem;
+    color: #ccc;
+    font-weight: 400;
+    line-height: 1.45;
+    margin-bottom: 25px;
 }
 
-.field{
-    margin-bottom:26px;
+.uploadBtn,
+.button {
+    background: #1ED0E7;
+    color: black;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
-.label{
-    font-size:1rem;
-    margin-bottom:6px;
+.uploadBtn {
+    display: inline-block;
+    margin-top: 20px;
 }
 
-input{
-    width:100%;
-    max-width:260px;
-    padding:10px 14px;
-    background:#1b1b1b;
-    border:1px solid #333;
-    border-radius:10px;
-    color:#1ED0E7;
-    font-size:1.1rem;
-    text-align:right;
+.fileHint {
+    margin-top: 10px;
+    font-size: .85rem;
+    color: #aaa;
 }
 
-.warn{
-    margin-top:6px;
-    font-size:.85rem;
-    color:#FFD24C;
+.spinner {
+    display: none;
+    width: 36px;
+    height: 36px;
+    margin: 24px auto;
+    border: 4px solid rgba(255,255,255,.2);
+    border-top: 4px solid #1ED0E7;
+    border-radius: 50%;
+    animation: spin .9s linear infinite;
 }
 
-.green{color:#4CFF4C;font-size:1.8rem;font-weight:700}
-.red{color:#FF5B5B;font-size:1.8rem;font-weight:700}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+#results,
+#comparisonBox {
+    display: none;
+    margin-top: 30px;
+    padding: 25px;
+    background: #0f0f0f;
+    border-radius: 14px;
+    text-align: left;
+}
+
+.title {
+    color: #1ED0E7;
+    font-size: 1.3rem;
+    margin-bottom: 14px;
+}
+
+.valueField {
+    width: 160px;
+    padding: 6px 8px;
+    background: #222;
+    border: 1px solid #555;
+    border-radius: 6px;
+    color: #1ED0E7;
+    text-align: right;
+}
+
+.warn {
+    color: #FFD24C;
+    font-size: .85rem;
+    margin-bottom: 10px;
+}
+
+.green {
+    color: #4CFF4C;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.red {
+    color: #FF5B5B;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.toggleExplain {
+    margin-top: 14px;
+    color: #1ED0E7;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+#detailsBox {
+    display: none;
+    margin-top: 18px;
+    padding: 18px;
+    background: #111;
+    border-radius: 8px;
+    font-size: .95rem;
+    color: #ccc;
+    line-height: 1.45;
+}
 </style>
 </head>
 
 <body>
 <div class="container">
 
+<img
+    src="https://images.ctfassets.net/zq85bj8o2ot3/3pxy6auNcSHUkZJmPJEegu/d4652795a22a6cc0fe3dd6f753358a7a/Tibber_Logotype_1080x500_White.png?h=250"
+    style="width:50%;max-width:360px;margin-bottom:24px"
+>
+
 <h1>Fakturaanalyse</h1>
-<h3>Last opp strømregningen din</h3>
+<h3>
+    Sjekk om du kan spare med Tibber<br>
+    Last opp en detaljert kopi av strømregningen din
+</h3>
 
-<label class="primaryBtn">
-    Last opp
-    <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png" hidden>
-</label>
-<br>
-<button class="secondaryBtn" onclick="processFile()">Beregn</button>
+<label for="fileInput" class="uploadBtn">Last opp strømregning</label>
+<input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png" hidden>
+<div id="fileHint" class="fileHint">Ingen fil valgt</div>
 
+<br><br>
+
+<button class="button" onclick="processFile()">Beregn</button>
 <div id="spinner" class="spinner"></div>
 
-<div id="results" class="card">
+<div id="results">
+    <div class="title">Funnet i strømregningen</div>
 
-<div class="field">
-    <div class="label">Totalt forbruk kWh</div>
-    <input id="inpForbruk">
-    <div id="wF" class="warn">Ikke funnet automatisk</div>
+    Forbruk kWh<br>
+    <input id="inpForbruk" class="valueField"><br>
+    <div id="warnForbruk" class="warn">Ikke funnet automatisk fyll inn manuelt</div>
+
+    Påslag øre per kWh<br>
+    <input id="inpPåslag" class="valueField"><br>
+    <div id="warnPåslag" class="warn">Ikke funnet automatisk fyll inn manuelt</div>
+
+    Månedsavgift kr<br>
+    <input id="inpMnd" class="valueField"><br>
+    <div id="warnMnd" class="warn">Ikke funnet automatisk fyll inn manuelt</div>
+
+    <button class="button" onclick="compareNow()">Sammenlign med Tibber</button>
 </div>
 
-<div class="field">
-    <div class="label">Påslag øre per kWh</div>
-    <input id="inpPåslag">
-    <div id="wP" class="warn">Ikke funnet automatisk</div>
-</div>
-
-<div class="field">
-    <div class="label">Månedsavgift kr</div>
-    <input id="inpMnd">
-    <div id="wM" class="warn">Ikke funnet automatisk</div>
-</div>
-
-<button class="primaryBtn" onclick="compare()">Sammenlign</button>
-
-</div>
-
-<div id="comparisonBox" class="card">
+<div id="comparisonBox">
+    <div class="title">Sammenligning</div>
     <div id="comparisonResult"></div>
+
+    <div class="toggleExplain" onclick="toggleDetails()">Vis detaljert forklaring</div>
+    <div id="detailsBox"></div>
+
+    <div style="margin-top:6px;font-size:.8rem;color:#888;">
+        Viser kun påslag og månedsavgift<br>
+        kWh forbruk kommer i tillegg
+    </div>
 </div>
 
 </div>
@@ -151,88 +209,152 @@ input{
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.2/tesseract.min.js"></script>
 
 <script>
-const fileInput=document.getElementById("fileInput");
-const spinner=document.getElementById("spinner");
+const el = id => document.getElementById(id);
 
-async function processFile(){
- if(!fileInput.files[0])return;
- spinner.style.display="block";
- let text="";
- const f=fileInput.files[0];
+const fileInput = el("fileInput");
+const fileHint = el("fileHint");
+const spinner = el("spinner");
 
- if(f.type==="application/pdf"){
-  text=await readPDF(f);
-  text+=" "+await ocrPDF(f);
- }else{
-  text=(await Tesseract.recognize(f,"nor+eng")).data.text;
- }
+const results = el("results");
+const comparisonBox = el("comparisonBox");
+const comparisonResult = el("comparisonResult");
+const detailsBox = el("detailsBox");
 
- fill(parse(text));
- spinner.style.display="none";
+const inpForbruk = el("inpForbruk");
+const inpPåslag = el("inpPåslag");
+const inpMnd = el("inpMnd");
+
+const warnForbruk = el("warnForbruk");
+const warnPåslag = el("warnPåslag");
+const warnMnd = el("warnMnd");
+
+fileInput.addEventListener("change", () => {
+    fileHint.textContent = fileInput.files.length
+        ? "Valgt fil: " + fileInput.files[0].name
+        : "Ingen fil valgt";
+});
+
+async function processFile() {
+    if (!fileInput.files[0]) return;
+
+    spinner.style.display = "block";
+    let text = "";
+    const file = fileInput.files[0];
+
+    if (file.type === "application/pdf") {
+        text = await extractPDF(file) + " " + await extractPDFasImageText(file);
+    } else {
+        text = await extractImage(file);
+    }
+
+    fillFields(parse(text));
+    spinner.style.display = "none";
 }
 
-async function readPDF(f){
- const pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;
- let out="";
- for(let i=1;i<=pdf.numPages;i++){
-  const p=await pdf.getPage(i);
-  const c=await p.getTextContent();
-  out+=c.items.map(x=>x.str).join(" ")+" ";
- }
- return out;
+async function extractPDF(file) {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let out = "";
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        out += content.items.map(t => t.str).join(" ") + " ";
+    }
+    return out;
 }
 
-async function ocrPDF(f){
- const pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;
- const p=await pdf.getPage(1);
- const v=p.getViewport({scale:3});
- const c=document.createElement("canvas");
- c.width=v.width;c.height=v.height;
- await p.render({canvasContext:c.getContext("2d"),viewport:v}).promise;
- return (await Tesseract.recognize(c,"nor+eng")).data.text;
+async function extractPDFasImageText(file) {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    const page = await pdf.getPage(1);
+
+    const viewport = page.getViewport({ scale: 2 });
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    const blob = await new Promise(r => canvas.toBlob(r));
+    const ocr = await Tesseract.recognize(blob, "nor+eng");
+
+    return ocr.data.text;
 }
 
-function parse(raw){
- const clean=raw.toLowerCase().replace(/,/g,".").replace(/\s+/g," ");
- const num=clean.replace(/ø/g,"o");
-
- let forbruk=null,påslag=null,mnd=null;
-
- const kwh=[...num.matchAll(/(\d{2,6}(?:\.\d+)?)\s*kwh/g)]
-  .map(x=>+x[1]).filter(v=>v>50&&v<20000);
- if(kwh.length)forbruk=Math.max(...kwh);
-
- const pZone=clean.slice(clean.indexOf("påslag")-150,clean.indexOf("påslag")+150);
- const pVals=[...pZone.matchAll(/(\d{1,2}(?:\.\d+)?)/g)]
-  .map(x=>+x[1]).filter(v=>v>0&&v<20);
- if(pVals.length)påslag=pVals[0];
-
- const mZone=clean.match(/(månedsavgift|fastbeløp|abonnement)[\s\S]{0,150}/);
- if(mZone){
-  const mVals=[...mZone[0].matchAll(/(\d{1,3}(?:\.\d+)?)/g)]
-   .map(x=>+x[1]).filter(v=>v>0&&v<200);
-  if(mVals.length)mnd=mVals[0];
- }
-
- return{forbruk,påslag,mnd};
+async function extractImage(file) {
+    const r = await Tesseract.recognize(file, "nor+eng");
+    return r.data.text;
 }
 
-function fill(d){
- document.getElementById("results").style.display="block";
- inpForbruk.value=d.forbruk||"";wF.style.display=d.forbruk?"none":"block";
- inpPåslag.value=d.påslag||"";wP.style.display=d.påslag?"none":"block";
- inpMnd.value=d.mnd||"";wM.style.display=d.mnd?"none":"block";
+function parse(raw) {
+    const text = raw.toLowerCase()
+        .replace(/,/g, ".")
+        .replace(/kwt/g, "kwh")
+        .replace(/\s+/g, " ");
+
+    let forbruk = null;
+    let påslag = null;
+    let mnd = null;
+
+    const kwh = [...text.matchAll(/(\d{2,6}(?:\.\d{1,3})?)\s*kwh/g)];
+    for (const m of kwh) {
+        const v = parseFloat(m[1]);
+        if (v > 100) { forbruk = v; break; }
+    }
+
+    const p = [...text.matchAll(/påslag[\s\S]{0,300}?(\d{1,2}(?:\.\d{1,2})?)\s*øre/g)];
+    if (p.length) påslag = parseFloat(p.at(-1)[1]);
+
+    const mndMatch = text.match(/fastbeløp|månedsavgift|abonnement[\s\S]{0,80}?(\d{1,3}(?:\.\d{2})?)\s*kr/);
+    if (mndMatch) mnd = parseFloat(mndMatch[1]);
+
+    return { forbruk, påslag, mnd };
 }
 
-function compare(){
- const f=+inpForbruk.value||0;
- const p=+inpPåslag.value||0;
- const m=+inpMnd.value||0;
- const diff=f*p/100+m-(f*3.4/100+49);
- document.getElementById("comparisonBox").style.display="block";
- comparisonResult.innerHTML=diff>0
- ?`<div class="green">Du sparer ${diff.toFixed(0)} kr per måned</div>`
- :`<div class="red">Tibber er litt dyrere</div>`;
+function fillFields(d) {
+    results.style.display = "block";
+
+    inpForbruk.value = d.forbruk || "";
+    warnForbruk.style.display = d.forbruk ? "none" : "block";
+
+    inpPåslag.value = d.påslag || "";
+    warnPåslag.style.display = d.påslag ? "none" : "block";
+
+    inpMnd.value = d.mnd || "";
+    warnMnd.style.display = d.mnd ? "none" : "block";
+}
+
+function compareNow() {
+    const f = parseFloat(inpForbruk.value) || 0;
+    const p = parseFloat(inpPåslag.value) || 0;
+    const m = parseFloat(inpMnd.value) || 0;
+
+    const diff = f * p / 100 + m - (f * 3.4 / 100 + 49);
+
+    comparisonResult.innerHTML = diff > 0
+        ? `<div class="green">Du kan betale mindre med Tibber</div>Du sparer ${diff.toFixed(0)} kr per måned`
+        : `<div class="red">Tibber er litt dyrere</div>`;
+
+    comparisonBox.style.display = "block";
+}
+
+function toggleDetails() {
+    const f = parseFloat(inpForbruk.value) || 0;
+    const p = parseFloat(inpPåslag.value) || 0;
+    const m = parseFloat(inpMnd.value) || 0;
+
+    detailsBox.innerHTML = `
+        <strong>Din avtale</strong><br>
+        Påslag ${p} øre per kWh<br>
+        Månedsavgift ${m} kr<br><br>
+        <strong>Tibber</strong><br>
+        Påslag 3.4 øre per kWh<br>
+        Månedsavgift 49 kr
+    `;
+
+    detailsBox.style.display = detailsBox.style.display === "block" ? "none" : "block";
 }
 </script>
 </body>
