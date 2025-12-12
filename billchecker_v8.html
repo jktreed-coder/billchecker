@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v11.2</title>
+<title>Tibber Fakturaanalyse v11.3</title>
 
 <style>
 @font-face{
@@ -171,7 +171,8 @@ Last opp en detaljert kopi av strømregningen din.
 
 <div class="fileHint" id="fileHint">
 Støttede filtyper: .jpg, .png, .pdf<br>
-All data behandles kun lokalt i nettleseren din.
+All data behandles kun lokalt i nettleseren din. <br>
+Ingen filer lagres eller sendes videre.
 </div>
 
 <br><br>
@@ -202,7 +203,12 @@ Månedsavgift kr<br>
 <div class="title">Sammenligning</div>
 <div id="comparisonResult"></div>
 <div class="toggleExplain" onclick="toggleDetails()">Vis detaljert forklaring</div>
+
 <div id="detailsBox"></div>
+<div style="margin-top:6px;font-size:.8rem;color:#888;">
+Viser kun hva du betaler totalt i påslag og månedsavgift. <br>
+kWh-forbruk kommer i tillegg.
+</div>
 </div>
 
 </div>
@@ -211,29 +217,29 @@ Månedsavgift kr<br>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.2/tesseract.min.js"></script>
 
 <script>
-const fileInput = document.getElementById("fileInput");
-const spinner = document.getElementById("spinner");
-const results = document.getElementById("results");
-const comparisonBox = document.getElementById("comparisonBox");
-const comparisonResult = document.getElementById("comparisonResult");
-const detailsBox = document.getElementById("detailsBox");
+const fileInput=document.getElementById("fileInput");
+const spinner=document.getElementById("spinner");
+const results=document.getElementById("results");
+const comparisonBox=document.getElementById("comparisonBox");
+const comparisonResult=document.getElementById("comparisonResult");
+const detailsBox=document.getElementById("detailsBox");
 
-const inpForbruk = document.getElementById("inpForbruk");
-const inpPåslag = document.getElementById("inpPåslag");
-const inpMnd = document.getElementById("inpMnd");
+const inpForbruk=document.getElementById("inpForbruk");
+const inpPåslag=document.getElementById("inpPåslag");
+const inpMnd=document.getElementById("inpMnd");
 
-const warnForbruk = document.getElementById("warnForbruk");
-const warnPåslag = document.getElementById("warnPåslag");
-const warnMnd = document.getElementById("warnMnd");
+const warnForbruk=document.getElementById("warnForbruk");
+const warnPåslag=document.getElementById("warnPåslag");
+const warnMnd=document.getElementById("warnMnd");
 
 async function processFile(){
-    if(!fileInput.files[0]) return;
+    if(!fileInput.files[0])return;
     spinner.style.display="block";
 
     let text="";
     const f=fileInput.files[0];
-    if(f.type==="application/pdf") text = await extractPDF(f);
-    else text = await extractImage(f);
+    if(f.type==="application/pdf") text=await extractPDF(f);
+    else text=await extractImage(f);
 
     fillFields(parse(text));
     spinner.style.display="none";
@@ -256,17 +262,20 @@ async function extractImage(f){
     return r.data.text;
 }
 
+/* ===== PARSER ===== */
+
 function parse(raw){
-    const text = raw.toLowerCase()
+    const text=raw.toLowerCase()
         .replace(/,/g,".")
         .replace(/kwt/g,"kwh")
         .replace(/\s+/g," ");
 
     let forbruk=null;
     let påslag=null;
+    let påslagKwh=null;
     let mnd=null;
 
-    const mndMatch = text.match(/(\d{1,3}(?:\.\d{1,2})?)\s*kr\s*(\/|per)?\s*(mnd|måned)/);
+    const mndMatch=text.match(/(\d{1,3}(?:\.\d{1,2})?)\s*kr\/?mnd/);
     if(mndMatch) mnd=parseFloat(mndMatch[1]);
 
     const kwh=[...text.matchAll(/(\d{2,6}(?:\.\d{1,3})?)\s*kwh/g)];
@@ -275,51 +284,67 @@ function parse(raw){
         if(v>100){ forbruk=v; break; }
     }
 
-    const p=[...text.matchAll(/påslag[\s\S]{0,200}?(\d{1,2}(?:\.\d{1,2})?)\s*øre\s*\/?\s*kwh/g)];
-    if(p.length) påslag=parseFloat(p[p.length-1][1]);
+    /* === FIX: Fjordkraft påslag === */
+    const p=[...text.matchAll(/påslag[\s\S]{0,300}?(\d{1,2}(?:\.\d{1,2})?)\s*øre\s*\/?\s*kwh/g)];
+    if(p.length){
+        påslag=parseFloat(p[p.length-1][1]);
+    }
 
-    return {forbruk,påslag,mnd};
+    return{forbruk,påslag,påslagKwh,mnd};
 }
+
+/* ===== UI ===== */
 
 function fillFields(d){
     results.style.display="block";
 
     inpForbruk.value=d.forbruk||"";
-    warnForbruk.style.display=d.forbruk!==null?"none":"block";
+    warnForbruk.style.display=d.forbruk?"none":"block";
 
     inpPåslag.value=d.påslag||"";
-    warnPåslag.style.display=d.påslag!==null?"none":"block";
+    warnPåslag.style.display=d.påslag?"none":"block";
 
     inpMnd.value=d.mnd||"";
-    warnMnd.style.display=d.mnd!==null?"none":"block";
+    warnMnd.style.display=d.mnd?"none":"block";
 }
 
 function compareNow(){
-    const f=parseFloat(inpForbruk.value)||0;
-    const p=parseFloat(inpPåslag.value)||0;
-    const m=parseFloat(inpMnd.value)||0;
+    const f=parseFloat(inpForbruk.value.replace(",", "."))||0;
+    const p=parseFloat(inpPåslag.value.replace(",", "."))||0;
+    const m=parseFloat(inpMnd.value.replace(",", "."))||0;
 
     const diff=f*p/100+m-(f*3.4/100+49);
 
     comparisonResult.innerHTML=
         diff>0
-        ? `<div class="green">Du kan betale mindre med Tibber</div>`
+        ? `<div class="green">Du kan betale mindre med Tibber</div>Du sparer ${diff.toFixed(0)} kr per måned`
         : `<div class="red">Tibber er litt dyrere, men...</div>`;
 
     comparisonBox.style.display="block";
 }
 
 function toggleDetails(){
-    detailsBox.style.display =
-        detailsBox.style.display==="block"?"none":"block";
+    const f=parseFloat(inpForbruk.value.replace(",", "."))||0;
+    const p=parseFloat(inpPåslag.value.replace(",", "."))||0;
+    const m=parseFloat(inpMnd.value.replace(",", "."))||0;
+
+    const påslagKr=(f*p)/100;
+    const tibberKr=(f*3.4)/100;
 
     detailsBox.innerHTML=`
-    <strong>Slik regner vi:</strong><br><br>
-    Nåværende avtale:<br>
-    Forbruk × påslag + månedsavgift<br><br>
-    Tibber:<br>
-    Forbruk × 3,4 øre + 49 kr
+        <strong>Din avtale</strong><br>
+        Påslag ${p} øre per kWh<br>
+        Månedsavgift ${m} kr<br>
+        Totalt ${(påslagKr+m).toFixed(2)} kr<br><br>
+
+        <strong>Med Tibber</strong><br>
+        Påslag 3.4 øre per kWh<br>
+        Månedsavgift 49 kr<br>
+        Totalt ${(tibberKr+49).toFixed(2)} kr
     `;
+
+    detailsBox.style.display=
+        detailsBox.style.display==="block"?"none":"block";
 }
 </script>
 </body>
