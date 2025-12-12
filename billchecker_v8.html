@@ -262,6 +262,7 @@ function parse(raw){
 
     let forbruk=null;
     let påslag=null;
+    let påslagKwh = null;
     let mnd=null;
 
     /* HARD MONTHLY FEE RULE */
@@ -290,14 +291,16 @@ if(!mnd){
         }
     }
 
-    /* PÅSLAG */
-    const påslagMatches=[...text.matchAll(/påslag.*?(\d{1,2}(?:\.\d{1,2})?)\s*øre/g)];
-    if(påslagMatches.length){
-        påslag=parseFloat(påslagMatches[0][1]);
-    }
+   /* PÅSLAG + TILHØRENDE kWh (samme linje) */
+const påslagLineMatch = text.match(
+    /påslag[\s\S]{0,60}?(\d{2,6})\s*kwh[\s\S]{0,60}?(\d{1,2}(?:\.\d{1,2})?)\s*øre(?:\/kwh)?/
+);
 
-    return{forbruk,påslag,mnd};
+if(påslagLineMatch){
+    påslagKwh = parseFloat(påslagLineMatch[1]);
+    påslag = parseFloat(påslagLineMatch[2]);
 }
+
 
 /* ===== UI ===== */
 
