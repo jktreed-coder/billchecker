@@ -2,77 +2,52 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v11.9</title>
+<title>Tibber Fakturaanalyse v12.0</title>
 
 <style>
-@font-face{font-family:"Silka";src:url("Silka-Regular.woff2") format("woff2"),url("Silka-Regular.woff") format("woff");font-weight:400;}
-@font-face{font-family:"Silka";src:url("Silka-SemiBold.woff2") format("woff2"),url("Silka-SemiBold.woff") format("woff");font-weight:600;}
+@font-face{font-family:"Silka";src:url("Silka-Regular.woff2") format("woff2");font-weight:400;}
+@font-face{font-family:"Silka";src:url("Silka-SemiBold.woff2") format("woff2");font-weight:600;}
 
 body{margin:0;background:black;color:white;font-family:Silka,Inter,Arial,sans-serif;display:flex;justify-content:center;padding:40px;}
 .container{width:100%;max-width:650px;text-align:center;}
 h1{font-size:2.2rem;margin-bottom:6px;}
-h3{font-size:1rem;color:#ccc;font-weight:400;line-height:1.45;margin-bottom:25px;}
-.uploadBtn{display:inline-block;background:#1ED0E7;color:black;padding:14px 28px;border-radius:50px;font-weight:600;cursor:pointer;margin-top:20px;}
-.fileHint{margin-top:10px;font-size:.85rem;color:#aaa;}
-.button{background:#1ED0E7;color:black;border:none;padding:14px 28px;border-radius:50px;font-size:16px;font-weight:600;cursor:pointer;margin-top:18px;}
-.spinner{display:none;width:36px;height:36px;margin:24px auto;border:4px solid rgba(255,255,255,.2);border-top:4px solid #1ED0E7;border-radius:50%;animation:spin .9s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-
-#results,#comparisonBox{background:#0f0f0f;padding:25px;border-radius:14px;margin-top:30px;text-align:left;display:none;}
-.title{color:#1ED0E7;font-size:1.3rem;margin-bottom:14px;}
-input.valueField{width:160px;padding:6px 8px;background:#222;border:1px solid #555;border-radius:6px;color:#1ED0E7;text-align:right;}
-.warn{color:#FFD24C;font-size:.85rem;margin-bottom:10px;}
-.green{color:#4CFF4C;font-size:1.8rem;font-weight:700;}
-.red{color:#FF5B5B;font-size:1.8rem;font-weight:700;}
-.toggleExplain{margin-top:14px;color:#1ED0E7;cursor:pointer;text-decoration:underline;}
-#detailsBox{margin-top:18px;background:#111;padding:18px;border-radius:8px;display:none;font-size:.95rem;color:#ccc;line-height:1.45;}
+h3{font-size:1rem;color:#ccc;font-weight:400;margin-bottom:25px;}
+.uploadBtn,.button{background:#1ED0E7;color:black;padding:14px 28px;border-radius:50px;font-weight:600;cursor:pointer;border:none}
+.spinner{display:none;width:36px;height:36px;margin:24px auto;border:4px solid rgba(255,255,255,.2);border-top:4px solid #1ED0E7;border-radius:50%;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#results,#comparisonBox{background:#0f0f0f;padding:25px;border-radius:14px;margin-top:30px;text-align:left;display:none}
+input.valueField{width:160px;padding:6px 8px;background:#222;border:1px solid #555;border-radius:6px;color:#1ED0E7;text-align:right}
+.warn{color:#FFD24C;font-size:.85rem;margin-bottom:10px}
+.green{color:#4CFF4C;font-size:1.6rem;font-weight:700}
+.red{color:#FF5B5B;font-size:1.6rem;font-weight:700}
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<img src="https://images.ctfassets.net/zq85bj8o2ot3/3pxy6auNcSHUkZJmPJEegu/d4652795a22a6cc0fe3dd6f753358a7a/Tibber_Logotype_1080x500_White.png?h=250"
-style="width:50%;max-width:360px;margin-bottom:24px">
-
 <h1>Fakturaanalyse</h1>
-<h3>Sjekk om du kan spare med Tibber!<br>Last opp en detaljert kopi av strømregningen din.</h3>
+<h3>Last opp strømregningen din</h3>
 
-<label for="fileInput" class="uploadBtn">Last opp strømregning</label>
-<input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none">
-<div class="fileHint" id="fileHint">Ingen fil valgt</div>
-
+<label for="fileInput" class="uploadBtn">Last opp</label>
+<input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png" hidden>
 <br><br>
 <button class="button" onclick="processFile()">Beregn</button>
+
 <div id="spinner" class="spinner"></div>
 
 <div id="results">
-<div class="title">Funnet i strømregningen</div>
-
 Forbruk kWh<br>
-<input id="inpForbruk" class="valueField"><br>
-<div id="warnForbruk" class="warn">Ikke funnet automatisk - fyll inn manuelt</div>
-
+<input id="inpForbruk" class="valueField"><div id="wF" class="warn">Ikke funnet</div>
 Påslag øre per kWh<br>
-<input id="inpPåslag" class="valueField"><br>
-<div id="warnPåslag" class="warn">Ikke funnet automatisk - fyll inn manuelt</div>
-
+<input id="inpPåslag" class="valueField"><div id="wP" class="warn">Ikke funnet</div>
 Månedsavgift kr<br>
-<input id="inpMnd" class="valueField"><br>
-<div id="warnMnd" class="warn">Ikke funnet automatisk - fyll inn manuelt</div>
-
-<button class="button" onclick="compareNow()">Sammenlign med Tibber</button>
+<input id="inpMnd" class="valueField"><div id="wM" class="warn">Ikke funnet</div>
+<button class="button" onclick="compare()">Sammenlign</button>
 </div>
 
 <div id="comparisonBox">
-<div class="title">Sammenligning</div>
 <div id="comparisonResult"></div>
-<div class="toggleExplain" onclick="toggleDetails()">Vis detaljert forklaring</div>
-<div id="detailsBox"></div>
-<div style="margin-top:6px;font-size:.8rem;color:#888;">
-Viser kun hva du betaler totalt i påslag og månedsavgift.<br>
-kWh-forbruk kommer i tillegg.
-</div>
 </div>
 
 </div>
@@ -81,196 +56,89 @@ kWh-forbruk kommer i tillegg.
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.2/tesseract.min.js"></script>
 
 <script>
-const fileInput=document.getElementById("fileInput");
-const fileHint=document.getElementById("fileHint");
-const spinner=document.getElementById("spinner");
-const results=document.getElementById("results");
-const comparisonBox=document.getElementById("comparisonBox");
-const comparisonResult=document.getElementById("comparisonResult");
-const detailsBox=document.getElementById("detailsBox");
-
-const inpForbruk=document.getElementById("inpForbruk");
-const inpPåslag=document.getElementById("inpPåslag");
-const inpMnd=document.getElementById("inpMnd");
-
-const warnForbruk=document.getElementById("warnForbruk");
-const warnPåslag=document.getElementById("warnPåslag");
-const warnMnd=document.getElementById("warnMnd");
-
-fileInput.addEventListener("change",()=>{
-    fileHint.textContent=fileInput.files.length
-        ? "Valgt fil: "+fileInput.files[0].name
-        : "Ingen fil valgt";
-});
+const f=document.getElementById("fileInput");
+const sp=document.getElementById("spinner");
 
 async function processFile(){
-    if(!fileInput.files[0]) return;
-    spinner.style.display="block";
-
-    let text="";
-    const f=fileInput.files[0];
-
-    if(f.type==="application/pdf"){
-        const pdfText=await extractPDF(f);
-        let imgText = '';
-        if (pdfText.length < 100) { // If text extraction failed, OCR all pages
-            imgText = await extractPDFasImageText(f);
-        } else {
-            imgText = await extractPDFasImageText(f, 1); // Only first page if text exists
-        }
-        text=pdfText+" "+imgText;
-    }else{
-        text=await extractImage(f);
-    }
-
-    fillFields(parse(text));
-    spinner.style.display="none";
+ if(!f.files[0])return;
+ sp.style.display="block";
+ let t="";
+ const file=f.files[0];
+ if(file.type==="application/pdf"){
+  t=await readPDF(file);
+  t+=" "+await ocrPDF(file);
+ }else{
+  t=(await Tesseract.recognize(file,"nor+eng")).data.text;
+ }
+ const r=parse(t);
+ fill(r);
+ sp.style.display="none";
 }
 
-async function extractPDF(f){
-    const buf=await f.arrayBuffer();
-    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-    let out="";
-    for(let i=1;i<=pdf.numPages;i++){
-        const p=await pdf.getPage(i);
-        const c=await p.getTextContent();
-        out+=c.items.map(t=>t.str).join(" ")+" ";
-    }
-    return out;
+async function readPDF(file){
+ const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+ let o="";
+ for(let i=1;i<=pdf.numPages;i++){
+  const p=await pdf.getPage(i);
+  const c=await p.getTextContent();
+  o+=c.items.map(x=>x.str).join(" ")+" ";
+ }
+ return o;
 }
 
-async function extractPDFasImageText(file, maxPages = Infinity){
-    const buf=await file.arrayBuffer();
-    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-    let out = '';
-    const numPages = Math.min(pdf.numPages, maxPages);
-    for(let i=1; i<=numPages; i++){
-        const page=await pdf.getPage(i);
-        const viewport=page.getViewport({scale:2});
-        const canvas=document.createElement("canvas");
-        const ctx=canvas.getContext("2d");
-        canvas.width=viewport.width;
-        canvas.height=viewport.height;
-        await page.render({canvasContext:ctx,viewport}).promise;
-        const blob=await new Promise(r=>canvas.toBlob(r));
-        const ocr=await Tesseract.recognize(blob,"nor+eng");
-        out += ocr.data.text + " ";
-    }
-    return out;
-}
-
-async function extractImage(f){
-    const r=await Tesseract.recognize(f,"nor+eng");
-    return r.data.text;
+async function ocrPDF(file){
+ const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+ let o="";
+ const p=await pdf.getPage(1);
+ const v=p.getViewport({scale:3});
+ const c=document.createElement("canvas");
+ c.width=v.width;c.height=v.height;
+ await p.render({canvasContext:c.getContext("2d"),viewport:v}).promise;
+ const r=await Tesseract.recognize(c,"nor+eng");
+ return r.data.text;
 }
 
 function parse(raw){
-    let text=raw.toLowerCase().replace(/,/g,".").replace(/kwt/g,"kwh").replace(/kw h/g,"kwh").replace(/ø/g,"o").replace(/l/g,"1").replace(/o/g,"0").replace(/\s+/g," ").trim(); // Added more OCR fixes
+ const clean=raw.toLowerCase().replace(/,/g,".").replace(/\s+/g," ");
+ const num=clean.replace(/ø/g,"o");
 
-    let forbruk=null;
-    let påslag=null;
-    let mnd=null;
+ let forbruk=null,påslag=null,mnd=null;
 
-    // Provider detection
-    const providers = {
-        fortum: text.includes('fortum'),
-        fjordkraft: text.includes('fjordkraft'),
-        lyse: text.includes('lyse'),
-        hafslund: text.includes('hafslund'),
-        bkk: text.includes('bkk')
-    };
+ const zone=(k)=>clean.includes(k)?clean.slice(clean.indexOf(k)-150,clean.indexOf(k)+150):"";
 
-    if (providers.fortum) {
-        const strømSectionMatch=text.match(/strøm fra fortum strøm([\s\S]{0,1200}?)(tilleggstjenester|sum strøm|nett)/);
-        const strømSection=strømSectionMatch ? strømSectionMatch[1] : "";
-        const mndMatch=strømSection.match(/fastbeløp[\s\S]{0,80}?(\d{1,3}(?:\.\d{2})?)\s*kr/);
-        if(mndMatch) mnd=parseFloat(mndMatch[1]);
-    } // Add similar for other providers if specific patterns known
+ const kwh=[...num.matchAll(/(\d{2,6}(?:\.\d+)?)\s*kwh/g)]
+  .map(x=>+x[1]).filter(v=>v>50&&v<20000);
+ if(kwh.length)forbruk=Math.max(...kwh);
 
-    // General kWh consumption: look near keywords like forbruk, total, energi
-    const kwhRegex = /(forbruk|total|energi|strømforbruk|konsum|bruk)[\s\S]{0,100}?(\d{2,6}(?:\.\d{1,3})?)[\s\S]{0,50}?kwh/gi;
-    const kwhMatches = [...text.matchAll(kwhRegex)];
-    let candidates = kwhMatches.map(m => parseFloat(m[2])).filter(v => v > 100);
-    if (candidates.length) {
-        forbruk = Math.max(...candidates); // Largest plausible
-    } else {
-        // Fallback to any large kWh
-        const fallbackKwh = [...text.matchAll(/(\d{2,6}(?:\.\d{1,3})?)\s*kwh/g)];
-        candidates = fallbackKwh.map(m => parseFloat(m[1])).filter(v => v > 100);
-        if (candidates.length) forbruk = Math.max(...candidates);
-    }
+ const pz=zone("påslag")+zone("øre");
+ const pm=[...pz.matchAll(/(\d{1,2}(?:\.\d+)?)/g)]
+  .map(x=>+x[1]).filter(v=>v>0&&v<20);
+ if(pm.length) påslag=pm[0];
 
-    // Expanded påslag matching
-    const markupKeywords = ['p.slag', 'påslag', 'tillegg', 'supplement', 'surcharge', 'mark', 'markup', 'avanse', 'øre per kwh', 'påslag per kwh', 'tillegg øre', 'påslag øre'];
-    const markupRegex = new RegExp(`(${markupKeywords.join('|')})[\\s\\S]{0,100}?(\\d{1,3}(?:\\.\\d{1,2})?)[\\s\\S]{0,50}?(øre|ore|o|kr|per|pr|\\s)?(kwh|kw h|kw|per kwh)`, 'gi');
-    const markupMatches = [...text.matchAll(markupRegex)];
-    if (markupMatches.length) {
-        const values = markupMatches.map(m => parseFloat(m[2])).filter(v => v > 0 && v < 50);
-        if (values.length) påslag = values[values.length - 1]; // Last match
-    }
+ const mz=zone("måneds")+zone("fastbeløp")+zone("abonnement");
+ const mm=[...mz.matchAll(/(\d{1,3}(?:\.\d+)?)/g)]
+  .map(x=>+x[1]).filter(v=>v>0&&v<200);
+ if(mm.length) mnd=mm[0];
 
-    // Expanded monthly fee matching
-    const monthlyKeywords = ['m.nedsavgift', 'månedsavgift', 'fastbel.p', 'fastbeløp', 'abonnement', 'fastpris', 'fastledd', 'm.nedsbel.p', 'månedlig avgift', 'fast m.nedsbel.p', 'abonnementsavgift', 'fixed monthly', 'månedsbeløp'];
-    const monthlyRegex = new RegExp(`(${monthlyKeywords.join('|')})[\\s\\S]{0,100}?(\\d{1,3}(?:\\.\\d{2})?)[\\s\\S]{0,50}?kr`, 'gi');
-    const monthlyMatches = [...text.matchAll(monthlyRegex)];
-    if (monthlyMatches.length) {
-        const values = monthlyMatches.map(m => parseFloat(m[2])).filter(v => v > 0 && v < 200);
-        if (values.length) mnd = values[values.length - 1];
-    }
-
-    return{forbruk, påslag, mnd};
+ return{forbruk,påslag,mnd};
 }
 
-function fillFields(d){
-    results.style.display="block";
-
-    inpForbruk.value=d.forbruk ? d.forbruk.toFixed(0) : "";
-    warnForbruk.style.display=d.forbruk?"none":"block";
-
-    inpPåslag.value=d.påslag ? d.påslag.toFixed(2) : "";
-    warnPåslag.style.display=d.påslag?"none":"block";
-
-    inpMnd.value=d.mnd ? d.mnd.toFixed(0) : "";
-    warnMnd.style.display=d.mnd?"none":"block";
+function fill(d){
+ document.getElementById("results").style.display="block";
+ inpForbruk.value=d.forbruk||"";wF.style.display=d.forbruk?"none":"block";
+ inpPåslag.value=d.påslag||"";wP.style.display=d.påslag?"none":"block";
+ inpMnd.value=d.mnd||"";wM.style.display=d.mnd?"none":"block";
 }
 
-function compareNow(){
-    const f=parseFloat(inpForbruk.value.replace(",", "."))||0;
-    const p=parseFloat(inpPåslag.value.replace(",", "."))||0;
-    const m=parseFloat(inpMnd.value.replace(",", "."))||0;
-
-    const diff=f*p/100+m-(f*3.4/100+49);
-
-    comparisonResult.innerHTML=
-        diff>0
-        ? `<div class="green">Du kan betale mindre med Tibber</div>Du sparer ${diff.toFixed(0)} kr per måned`
-        : `<div class="red">Tibber er litt dyrere, men...</div>`;
-
-    comparisonBox.style.display="block";
-}
-
-function toggleDetails(){
-    const f=parseFloat(inpForbruk.value.replace(",", "."))||0;
-    const p=parseFloat(inpPåslag.value.replace(",", "."))||0;
-    const m=parseFloat(inpMnd.value.replace(",", "."))||0;
-
-    const påslagKr=(f*p)/100;
-    const tibberKr=(f*3.4)/100;
-
-    detailsBox.innerHTML=`
-        <strong>Din avtale</strong><br>
-        Påslag ${p} øre per kWh<br>
-        Månedsavgift ${m} kr<br>
-        Totalt ${(påslagKr+m).toFixed(2)} kr<br><br>
-
-        <strong>Med Tibber</strong><br>
-        Påslag 3.4 øre per kWh<br>
-        Månedsavgift 49 kr<br>
-        Totalt ${(tibberKr+49).toFixed(2)} kr
-    `;
-
-    detailsBox.style.display=
-        detailsBox.style.display==="block"?"none":"block";
+function compare(){
+ const f=+inpForbruk.value||0;
+ const p=+inpPåslag.value||0;
+ const m=+inpMnd.value||0;
+ const diff=f*p/100+m-(f*3.4/100+49);
+ comparisonBox.style.display="block";
+ comparisonResult.innerHTML=diff>0
+ ?`<div class="green">Du sparer ${diff.toFixed(0)} kr</div>`
+ :`<div class="red">Tibber er litt dyrere</div>`;
 }
 </script>
 </body>
