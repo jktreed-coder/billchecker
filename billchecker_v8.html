@@ -2,154 +2,49 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v8.3</title>
+<title>Tibber Fakturaanalyse v9.0</title>
 
 <style>
-@font-face {
-    font-family:"Silka";
-    src:url("Silka-Regular.woff2") format("woff2"),
-        url("Silka-Regular.woff") format("woff");
-    font-weight:400;
-}
-@font-face {
-    font-family:"Silka";
-    src:url("Silka-SemiBold.woff2") format("woff2"),
-        url("Silka-SemiBold.woff") format("woff");
-    font-weight:600;
-}
-
 body{
     margin:0;
     background:black;
     color:white;
-    font-family:Silka,Inter,Arial,sans-serif;
+    font-family:Inter,Arial,sans-serif;
     display:flex;
     justify-content:center;
     padding:40px;
 }
-
-.container{
-    width:100%;
-    max-width:650px;
-    text-align:center;
+.container{max-width:650px;width:100%;text-align:center}
+h1{font-size:2.2rem;margin-bottom:6px}
+h3{font-size:1rem;color:#ccc;line-height:1.45}
+.button,.uploadBtn{
+    background:#1ED0E7;color:black;border:none;
+    padding:14px 28px;border-radius:50px;
+    font-weight:600;cursor:pointer;margin-top:18px
 }
-
-h1{
-    font-size:2.2rem;
-    margin-bottom:6px;
-}
-
-h3{
-    font-size:1rem;
-    color:#ccc;
-    font-weight:400;
-    line-height:1.45;
-    margin-bottom:25px;
-}
-
-.uploadBtn{
-    display:inline-block;
-    background:#1ED0E7;
-    color:black;
-    padding:14px 28px;
-    border-radius:50px;
-    font-weight:600;
-    cursor:pointer;
-    margin-top:20px;
-}
-
-.fileHint{
-    margin-top:10px;
-    font-size:.85rem;
-    color:#aaa;
-}
-
-.button{
-    background:#1ED0E7;
-    color:black;
-    border:none;
-    padding:14px 28px;
-    border-radius:50px;
-    font-size:16px;
-    font-weight:600;
-    cursor:pointer;
-    margin-top:18px;
-}
-
+.fileHint{font-size:.85rem;color:#aaa;margin-top:10px}
 .spinner{
-    display:none;
-    width:36px;
-    height:36px;
-    margin:24px auto;
+    display:none;width:36px;height:36px;margin:24px auto;
     border:4px solid rgba(255,255,255,.2);
-    border-top:4px solid #1ED0E7;
-    border-radius:50%;
-    animation:spin .9s linear infinite;
+    border-top:4px solid #1ED0E7;border-radius:50%;
+    animation:spin .9s linear infinite
 }
-
-@keyframes spin{
-    to{transform:rotate(360deg);}
-}
-
+@keyframes spin{to{transform:rotate(360deg)}}
 #results,#comparisonBox{
-    background:#0f0f0f;
-    padding:25px;
-    border-radius:14px;
-    margin-top:30px;
-    text-align:left;
-    display:none;
+    background:#0f0f0f;padding:25px;border-radius:14px;
+    margin-top:30px;text-align:left;display:none
 }
-
-.title{
-    color:#1ED0E7;
-    font-size:1.3rem;
-    margin-bottom:14px;
-}
-
+.warn{color:#FFD24C;font-size:.85rem;margin-bottom:10px}
 input.valueField{
-    width:160px;
-    padding:6px 8px;
-    background:#222;
-    border:1px solid #555;
-    border-radius:6px;
-    color:#1ED0E7;
-    text-align:right;
+    width:160px;padding:6px 8px;background:#222;
+    border:1px solid #555;border-radius:6px;
+    color:#1ED0E7;text-align:right
 }
-
-.warn{
-    color:#FFD24C;
-    font-size:.85rem;
-    margin-bottom:10px;
-}
-
-.green{
-    color:#4CFF4C;
-    font-size:1.8rem;
-    font-weight:700;
-}
-
-.red{
-    color:#FF5B5B;
-    font-size:1.8rem;
-    font-weight:700;
-}
-
-.toggleExplain{
-    margin-top:14px;
-    color:#1ED0E7;
-    cursor:pointer;
-    text-decoration:underline;
-}
-
+.green{color:#4CFF4C;font-size:1.8rem;font-weight:700}
+.toggleExplain{color:#1ED0E7;cursor:pointer;text-decoration:underline}
 #detailsBox{
-    margin-top:18px;
-    background:#111;
-    padding:18px;
-    border-radius:8px;
-    display:none;
-    font-size:.95rem;
-    color:#ccc;
-    line-height:1.45;
+    background:#111;padding:18px;border-radius:8px;
+    margin-top:16px;display:none;color:#ccc
 }
 </style>
 </head>
@@ -157,36 +52,27 @@ input.valueField{
 <body>
 <div class="container">
 
-<img src="https://images.ctfassets.net/zq85bj8o2ot3/3pxy6auNcSHUkZJmPJEegu/d4652795a22a6cc0fe3dd6f753358a7a/Tibber_Logotype_1080x500_White.png?h=250"
-style="width:50%;max-width:360px;margin-bottom:24px">
-
 <h1>Fakturaanalyse</h1>
 <h3>
-Sjekk om du kan spare med Tibber! Vår fakturaanalyse sjekker din strømregning på sekunder.
-Last opp en detaljert kopi som viser påslag og evt. månedsavgift.
+Last opp strømregningen din. Vi identifiserer påslag og månedsavgift
+automatisk, uansett leverandør.
 </h3>
 
 <label for="fileInput" class="uploadBtn">Last opp strømregning</label>
-<input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none">
-
+<input id="fileInput" type="file" accept=".pdf,.jpg,.png" style="display:none">
 <div class="fileHint" id="fileHint">Støttede filtyper: .jpg, .png, .pdf</div>
 
 <button class="button" onclick="processFile()">Beregn</button>
-
-<p style="font-size:.85rem;color:#aaa;max-width:520px;margin:12px auto">
-Regningen behandles kun lokalt i nettleseren din. Ingen filer eller data lagres eller sendes til Tibber eller tredjeparter.
-</p>
-
 <div id="spinner" class="spinner"></div>
 
 <div id="results">
-<div class="title">Funnet i strømregningen</div>
+<b>Funnet i strømregningen</b><br><br>
 
 Forbruk (kWh):<br>
 <input id="inpForbruk" class="valueField"><br>
 <div id="warnForbruk" class="warn">Ikke funnet i faktura</div>
 
-Påslag (øre per kWh):<br>
+Påslag (øre/kWh):<br>
 <input id="inpPåslag" class="valueField"><br>
 <div id="warnPåslag" class="warn">Ikke funnet i faktura</div>
 
@@ -194,11 +80,10 @@ Månedsavgift (kr):<br>
 <input id="inpMnd" class="valueField"><br>
 <div id="warnMnd" class="warn">Ikke funnet i faktura</div>
 
-<button class="button" onclick="compareNow()">Sammenlign med Tibber</button>
+<button class="button" onclick="compare()">Sammenlign med Tibber</button>
 </div>
 
 <div id="comparisonBox">
-<div class="title">Sammenligning</div>
 <div id="comparisonResult"></div>
 <div class="toggleExplain" onclick="toggleDetails()">Vis detaljert forklaring</div>
 <div id="detailsBox"></div>
@@ -210,27 +95,19 @@ Månedsavgift (kr):<br>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.2/tesseract.min.js"></script>
 
 <script>
-fileInput.addEventListener("change",()=>{
-    if(fileInput.files.length){
-        fileHint.textContent=fileInput.files[0].name;
-    }
-});
+fileInput.onchange=()=>fileHint.textContent=fileInput.files[0]?.name||"";
 
-function showSpinner(x){
-    spinner.style.display = x ? "block" : "none";
-}
+function showSpinner(x){spinner.style.display=x?"block":"none"}
 
 async function processFile(){
     if(!fileInput.files[0])return;
     showSpinner(true);
-
-    let text="";
     const f=fileInput.files[0];
-
+    let text="";
     if(f.type==="application/pdf") text=await extractPDF(f);
-    else text=await extractImage(f);
-
-    fillFields(parse(text));
+    else text=(await Tesseract.recognize(f,"nor")).data.text;
+    const data=parseBill(text);
+    fill(data);
     showSpinner(false);
 }
 
@@ -246,44 +123,96 @@ async function extractPDF(f){
     return out;
 }
 
-async function extractImage(f){
-    const r=await Tesseract.recognize(f,"nor");
-    return r.data.text;
+/* ---------- BILL TYPE DETECTION ---------- */
+
+function detectMode(t){
+    t=t.toLowerCase();
+    if(/tibber-abonnement|grid rewards|kWt/.test(t)) return "TIBBER_UI";
+    if(/strøm fra|fjordkraft|ishavskraft|los|lyse/.test(t)) return "SUPPLIER_PDF";
+    return "GENERIC";
 }
 
-function classify(l){
-    if(/påslag/.test(l)) return "påslag";
-    if(/månedsavgift|månedspris|fastpris|fastbeløp|abonnementspris|abonnementsavgift|abonnement|administrasjon|grunnbeløp/.test(l))
-        return "mnd";
-    return "";
+/* ---------- PARSERS ---------- */
+
+function parseBill(t){
+    const mode=detectMode(t);
+    if(mode==="TIBBER_UI") return parseTibberUI(t);
+    if(mode==="SUPPLIER_PDF") return parseSupplierPDF(t);
+    return parseGeneric(t);
 }
 
-function parse(t){
+/* Tibber app */
+function parseTibberUI(t){
     const lines=t.toLowerCase().split(/\n+/);
-    let f=null,p=null,m=null;
+    let f,p,m;
+    lines.forEach(l=>{
+        if(/kwh/.test(l)&&!f){
+            const r=l.match(/(\d[\d.,]*)\s*kwh/); if(r) f=+r[1].replace(",",".");
+        }
+        if(/påslag/.test(l)){
+            const r=l.match(/(\d[\d.,]*)\s*øre/); if(r) p=+r[1].replace(",",".");
+        }
+        if(/tibber-abonnement/.test(l)){
+            const r=l.match(/(\d[\d.,]*)\s*kr/); if(r) m=+r[1].replace(",",".");
+        }
+    });
+    return {forbruk:f,påslag:p,mnd:m};
+}
 
-    for(let i=0;i<lines.length;i++){
-        const l=lines[i];
+/* Supplier PDFs */
+function parseSupplierPDF(t){
+    const lines=t.toLowerCase().split(/\n+/);
+    let f,p,m,stop=false;
+    lines.forEach(l=>{
+        if(/nettleie/.test(l)) stop=true;
+        if(stop) return;
 
         if(!f){
             const r=l.match(/(\d[\d.,]*)\s*kwh/);
-            if(r) f=parseFloat(r[1].replace(",",".")); 
+            if(r) f=+r[1].replace(",",".");
         }
-
-        if(!p && classify(l)==="påslag"){
+        if(/påslag/.test(l)){
             const r=l.match(/(\d[\d.,]*)\s*øre/);
-            if(r && parseFloat(r[1])<=20) p=parseFloat(r[1].replace(",",".")); 
+            if(r){
+                const v=+r[1].replace(",",".");
+                if(v>=2&&v<=20) p=v;
+            }
         }
-
-        if(!m && classify(l)==="mnd"){
+        if(/månedsavgift|fastbeløp|abonnementsavgift|administrasjon/.test(l)&&!m){
             const r=l.match(/(\d[\d.,]*)\s*kr/);
-            if(r) m=parseFloat(r[1].replace(",",".")); 
+            if(r) m=+r[1].replace(",",".");
         }
-    }
-    return {forbruk:f,påslag:p,mndavg:m};
+    });
+    return {forbruk:f,påslag:p,mnd:m};
 }
 
-function fillFields(d){
+/* Generic fallback */
+function parseGeneric(t){
+    const lines=t.toLowerCase().split(/\n+/);
+    let f,p,m;
+    lines.forEach(l=>{
+        if(!f){
+            const r=l.match(/(\d[\d.,]*)\s*kwh/);
+            if(r) f=+r[1].replace(",",".");
+        }
+        if(/påslag/.test(l)){
+            const r=l.match(/(\d[\d.,]*)\s*øre/);
+            if(r){
+                const v=+r[1].replace(",",".");
+                if(v>=2&&v<=20) p=v;
+            }
+        }
+        if(/månedsavgift|abonnement/.test(l)&&!m){
+            const r=l.match(/(\d[\d.,]*)\s*kr/);
+            if(r) m=+r[1].replace(",",".");
+        }
+    });
+    return {forbruk:f,påslag:p,mnd:m};
+}
+
+/* ---------- UI ---------- */
+
+function fill(d){
     results.style.display="block";
 
     inpForbruk.value=d.forbruk||"";
@@ -292,22 +221,19 @@ function fillFields(d){
     inpPåslag.value=d.påslag||"";
     warnPåslag.style.display=d.påslag?"none":"block";
 
-    inpMnd.value=d.mndavg||"";
-    warnMnd.style.display=d.mndavg?"none":"block";
+    inpMnd.value=d.mnd||"";
+    warnMnd.style.display=d.mnd?"none":"block";
 }
 
-function compareNow(){
+function compare(){
     const f=+inpForbruk.value||0;
     const p=+inpPåslag.value||0;
     const m=+inpMnd.value||0;
-
     const diff=f*p/100+m-(f*3.4/100+49);
-
-    comparisonResult.innerHTML =
+    comparisonResult.innerHTML=
         diff>0
-        ? `<div class="green">Du kan betale mindre med Tibber</div>Du sparer ${diff.toFixed(0)} kr per måned`
-        : `<div class="red">Tibber blir dyrere for deg</div>`;
-
+        ? `<div class="green">Du sparer ${diff.toFixed(0)} kr per måned</div>`
+        : `Tibber blir dyrere`;
     comparisonBox.style.display="block";
 }
 
@@ -315,24 +241,16 @@ function toggleDetails(){
     const f=+inpForbruk.value||0;
     const p=+inpPåslag.value||0;
     const m=+inpMnd.value||0;
-
-    const dineTotal=(f*p/100+m).toFixed(2);
-    const tibTotal =(f*3.4/100+49).toFixed(2);
-
     detailsBox.innerHTML=`
-        <strong>Din nåværende avtale</strong><br>
-        Påslag: ${p} øre per kWh<br>
-        Månedsavgift: ${m} kr<br>
-        Total basert på ${f} kWh: <strong>${dineTotal} kr</strong><br><br>
-
-        <strong>Med Tibber</strong><br>
-        Påslag: 3,4 øre per kWh<br>
-        Månedsavgift: 49 kr<br>
-        Total basert på ${f} kWh: <strong>${tibTotal} kr</strong>
+    <b>Din avtale</b><br>
+    Påslag: ${p} øre<br>
+    Månedsavgift: ${m} kr<br><br>
+    <b>Tibber</b><br>
+    Påslag: 3,4 øre<br>
+    Månedsavgift: 49 kr
     `;
-
-    detailsBox.style.display =
-        detailsBox.style.display==="block" ? "none" : "block";
+    detailsBox.style.display=
+        detailsBox.style.display==="block"?"none":"block";
 }
 </script>
 </body>
