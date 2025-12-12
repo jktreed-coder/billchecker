@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v9.5</title>
+<title>Tibber Fakturaanalyse v9.6</title>
 
 <style>
 @font-face{
@@ -331,18 +331,20 @@ function toggleDetails(){
     const p=+inpPåslag.value||0;
     const m=+inpMnd.value||0;
 
-    const påslagKr=((window.påslagKwh ?? f)*p)/100;
+    const kwhBase = window.påslagKwh ?? f;
+    const påslagKr = (kwhBase * p) / 100;
+    const tibberKr = (kwhBase * 3.4) / 100;
 
     detailsBox.innerHTML=`
         <strong>Din avtale</strong><br>
         Påslag ${p} øre per kWh<br>
         Månedsavgift ${m} kr<br>
-        Totalt ${(påslagKr+m).toFixed(2)} kr<br><br>
+        Totalt ${(påslagKr + m).toFixed(2)} kr<br><br>
 
         <strong>Med Tibber</strong><br>
         Påslag 3.4 øre per kWh<br>
         Månedsavgift 49 kr<br>
-        Totalt ${(f*3.4/100+49).toFixed(2)} kr
+        Totalt ${(tibberKr + 49).toFixed(2)} kr
     `;
 
     detailsBox.style.display=
