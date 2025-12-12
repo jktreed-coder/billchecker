@@ -2,91 +2,152 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v9.0</title>
+<title>Tibber Fakturaanalyse</title>
 
 <style>
+@font-face{
+  font-family:Silka;
+  src:url(Silka-Regular.woff2) format("woff2");
+  font-weight:400
+}
+@font-face{
+  font-family:Silka;
+  src:url(Silka-SemiBold.woff2) format("woff2");
+  font-weight:600
+}
+
 body{
-    margin:0;
-    background:black;
-    color:white;
-    font-family:Inter,Arial,sans-serif;
-    display:flex;
-    justify-content:center;
-    padding:40px;
+  margin:0;
+  background:#000;
+  color:#fff;
+  font-family:Silka,Inter,Arial,sans-serif;
 }
-.container{max-width:650px;width:100%;text-align:center}
-h1{font-size:2.2rem;margin-bottom:6px}
-h3{font-size:1rem;color:#ccc;line-height:1.45}
-.button,.uploadBtn{
-    background:#1ED0E7;color:black;border:none;
-    padding:14px 28px;border-radius:50px;
-    font-weight:600;cursor:pointer;margin-top:18px
+
+.wrapper{
+  max-width:680px;
+  margin:0 auto;
+  padding:40px 24px;
+  text-align:center;
 }
-.fileHint{font-size:.85rem;color:#aaa;margin-top:10px}
+
+.logo{
+  width:220px;
+  margin:0 auto 32px;
+}
+
+h1{
+  font-size:2.4rem;
+  margin-bottom:8px;
+}
+
+.lead{
+  color:#ccc;
+  font-size:1.05rem;
+  line-height:1.5;
+  margin-bottom:32px;
+}
+
+.primary{
+  background:#1ED0E7;
+  color:#000;
+  border:none;
+  padding:16px 32px;
+  border-radius:999px;
+  font-weight:600;
+  cursor:pointer;
+}
+
+.fileHint{
+  margin-top:10px;
+  font-size:.85rem;
+  color:#aaa;
+}
+
+.card{
+  background:#0e0e0e;
+  border-radius:16px;
+  padding:28px;
+  margin-top:40px;
+  text-align:left;
+}
+
+.card h2{
+  color:#1ED0E7;
+  font-size:1.2rem;
+  margin-bottom:20px;
+}
+
+label{
+  display:block;
+  margin-top:14px;
+}
+
+input{
+  margin-top:6px;
+  background:#222;
+  border:1px solid #555;
+  color:#1ED0E7;
+  padding:8px;
+  border-radius:6px;
+  width:160px;
+}
+
+.warn{
+  color:#FFD24C;
+  font-size:.85rem;
+}
+
 .spinner{
-    display:none;width:36px;height:36px;margin:24px auto;
-    border:4px solid rgba(255,255,255,.2);
-    border-top:4px solid #1ED0E7;border-radius:50%;
-    animation:spin .9s linear infinite
+  display:none;
+  width:36px;
+  height:36px;
+  border:4px solid rgba(255,255,255,.2);
+  border-top:4px solid #1ED0E7;
+  border-radius:50%;
+  margin:24px auto;
+  animation:spin .9s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
-#results,#comparisonBox{
-    background:#0f0f0f;padding:25px;border-radius:14px;
-    margin-top:30px;text-align:left;display:none
-}
-.warn{color:#FFD24C;font-size:.85rem;margin-bottom:10px}
-input.valueField{
-    width:160px;padding:6px 8px;background:#222;
-    border:1px solid #555;border-radius:6px;
-    color:#1ED0E7;text-align:right
-}
-.green{color:#4CFF4C;font-size:1.8rem;font-weight:700}
-.toggleExplain{color:#1ED0E7;cursor:pointer;text-decoration:underline}
-#detailsBox{
-    background:#111;padding:18px;border-radius:8px;
-    margin-top:16px;display:none;color:#ccc
-}
 </style>
 </head>
 
 <body>
-<div class="container">
+<div class="wrapper">
+
+<img class="logo" src="https://images.ctfassets.net/zq85bj8o2ot3/3pxy6auNcSHUkZJmPJEegu/d4652795a22a6cc0fe3dd6f753358a7a/Tibber_Logotype_1080x500_White.png?h=250">
 
 <h1>Fakturaanalyse</h1>
-<h3>
-Last opp strømregningen din. Vi identifiserer påslag og månedsavgift
-automatisk, uansett leverandør.
-</h3>
+<p class="lead">
+Last opp strømregningen din. Vi identifiserer påslag og månedsavgift automatisk, uansett leverandør.
+</p>
 
-<label for="fileInput" class="uploadBtn">Last opp strømregning</label>
-<input id="fileInput" type="file" accept=".pdf,.jpg,.png" style="display:none">
+<label class="primary">
+  Last opp strømregning
+  <input id="fileInput" type="file" accept=".pdf,.jpg,.png" hidden>
+</label>
 <div class="fileHint" id="fileHint">Støttede filtyper: .jpg, .png, .pdf</div>
 
-<button class="button" onclick="processFile()">Beregn</button>
-<div id="spinner" class="spinner"></div>
+<button class="primary" style="margin-top:20px" onclick="process()">Beregn</button>
 
-<div id="results">
-<b>Funnet i strømregningen</b><br><br>
+<div class="spinner" id="spinner"></div>
 
-Forbruk (kWh):<br>
-<input id="inpForbruk" class="valueField"><br>
-<div id="warnForbruk" class="warn">Ikke funnet i faktura</div>
+<div class="card" id="results" style="display:none">
+  <h2>Funnet i strømregningen</h2>
 
-Påslag (øre/kWh):<br>
-<input id="inpPåslag" class="valueField"><br>
-<div id="warnPåslag" class="warn">Ikke funnet i faktura</div>
+  <label>Forbruk (kWh)
+    <input id="f">
+    <div class="warn" id="wf">Ikke funnet i faktura</div>
+  </label>
 
-Månedsavgift (kr):<br>
-<input id="inpMnd" class="valueField"><br>
-<div id="warnMnd" class="warn">Ikke funnet i faktura</div>
+  <label>Påslag (øre/kWh)
+    <input id="p">
+    <div class="warn" id="wp">Ikke funnet i faktura</div>
+  </label>
 
-<button class="button" onclick="compare()">Sammenlign med Tibber</button>
-</div>
-
-<div id="comparisonBox">
-<div id="comparisonResult"></div>
-<div class="toggleExplain" onclick="toggleDetails()">Vis detaljert forklaring</div>
-<div id="detailsBox"></div>
+  <label>Månedsavgift (kr)
+    <input id="m">
+    <div class="warn" id="wm">Ikke funnet i faktura</div>
+  </label>
 </div>
 
 </div>
@@ -97,161 +158,64 @@ Månedsavgift (kr):<br>
 <script>
 fileInput.onchange=()=>fileHint.textContent=fileInput.files[0]?.name||"";
 
-function showSpinner(x){spinner.style.display=x?"block":"none"}
+function spin(x){spinner.style.display=x?"block":"none"}
 
-async function processFile(){
-    if(!fileInput.files[0])return;
-    showSpinner(true);
-    const f=fileInput.files[0];
-    let text="";
-    if(f.type==="application/pdf") text=await extractPDF(f);
-    else text=(await Tesseract.recognize(f,"nor")).data.text;
-    const data=parseBill(text);
-    fill(data);
-    showSpinner(false);
-}
+async function process(){
+  if(!fileInput.files[0])return;
+  spin(true);
 
-async function extractPDF(f){
+  const f=fileInput.files[0];
+  let t="";
+  if(f.type==="application/pdf"){
     const buf=await f.arrayBuffer();
     const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-    let out="";
     for(let i=1;i<=pdf.numPages;i++){
-        const p=await pdf.getPage(i);
-        const c=await p.getTextContent();
-        out+=c.items.map(t=>t.str).join(" ")+"\n";
+      const p=await pdf.getPage(i);
+      const c=await p.getTextContent();
+      t+=c.items.map(x=>x.str).join(" ")+"\n";
     }
-    return out;
+  } else {
+    t=(await Tesseract.recognize(f,"nor")).data.text;
+  }
+
+  parseSupplier(t.toLowerCase());
+  spin(false);
 }
 
-/* ---------- BILL TYPE DETECTION ---------- */
+function parseSupplier(t){
+  let inSupplier=false;
+  let f=null,p=null,m=null;
 
-function detectMode(t){
-    t=t.toLowerCase();
-    if(/tibber-abonnement|grid rewards|kWt/.test(t)) return "TIBBER_UI";
-    if(/strøm fra|fjordkraft|ishavskraft|los|lyse/.test(t)) return "SUPPLIER_PDF";
-    return "GENERIC";
+  t.split(/\n+/).forEach(l=>{
+    if(/strøm fra/.test(l)) inSupplier=true;
+    if(/nettleie/.test(l)) inSupplier=false;
+
+    if(!inSupplier) return;
+
+    if(!f){
+      const r=l.match(/(\d[\d.,]*)\s*kwh/);
+      if(r) f=+r[1].replace(",","." );
+    }
+    if(/påslag/.test(l)){
+      const r=l.match(/(\d[\d.,]*)\s*øre/);
+      if(r) p=+r[1].replace(",",".");
+    }
+    if(/månedsavgift|fastbeløp|abonnementsavgift|abonnement|administrasjon/.test(l)){
+      const r=l.match(/(\d[\d.,]*)\s*kr/);
+      if(r) m=+r[1].replace(",",".");
+    }
+  });
+
+  results.style.display="block";
+  fEl(f,fld=f);
 }
 
-/* ---------- PARSERS ---------- */
-
-function parseBill(t){
-    const mode=detectMode(t);
-    if(mode==="TIBBER_UI") return parseTibberUI(t);
-    if(mode==="SUPPLIER_PDF") return parseSupplierPDF(t);
-    return parseGeneric(t);
+function fEl(v,el){
+  el.value=v||"";
+  el.nextElementSibling.style.display=v?"none":"block";
 }
 
-/* Tibber app */
-function parseTibberUI(t){
-    const lines=t.toLowerCase().split(/\n+/);
-    let f,p,m;
-    lines.forEach(l=>{
-        if(/kwh/.test(l)&&!f){
-            const r=l.match(/(\d[\d.,]*)\s*kwh/); if(r) f=+r[1].replace(",",".");
-        }
-        if(/påslag/.test(l)){
-            const r=l.match(/(\d[\d.,]*)\s*øre/); if(r) p=+r[1].replace(",",".");
-        }
-        if(/tibber-abonnement/.test(l)){
-            const r=l.match(/(\d[\d.,]*)\s*kr/); if(r) m=+r[1].replace(",",".");
-        }
-    });
-    return {forbruk:f,påslag:p,mnd:m};
-}
-
-/* Supplier PDFs */
-function parseSupplierPDF(t){
-    const lines=t.toLowerCase().split(/\n+/);
-    let f,p,m,stop=false;
-    lines.forEach(l=>{
-        if(/nettleie/.test(l)) stop=true;
-        if(stop) return;
-
-        if(!f){
-            const r=l.match(/(\d[\d.,]*)\s*kwh/);
-            if(r) f=+r[1].replace(",",".");
-        }
-        if(/påslag/.test(l)){
-            const r=l.match(/(\d[\d.,]*)\s*øre/);
-            if(r){
-                const v=+r[1].replace(",",".");
-                if(v>=2&&v<=20) p=v;
-            }
-        }
-        if(/månedsavgift|fastbeløp|abonnementsavgift|administrasjon/.test(l)&&!m){
-            const r=l.match(/(\d[\d.,]*)\s*kr/);
-            if(r) m=+r[1].replace(",",".");
-        }
-    });
-    return {forbruk:f,påslag:p,mnd:m};
-}
-
-/* Generic fallback */
-function parseGeneric(t){
-    const lines=t.toLowerCase().split(/\n+/);
-    let f,p,m;
-    lines.forEach(l=>{
-        if(!f){
-            const r=l.match(/(\d[\d.,]*)\s*kwh/);
-            if(r) f=+r[1].replace(",",".");
-        }
-        if(/påslag/.test(l)){
-            const r=l.match(/(\d[\d.,]*)\s*øre/);
-            if(r){
-                const v=+r[1].replace(",",".");
-                if(v>=2&&v<=20) p=v;
-            }
-        }
-        if(/månedsavgift|abonnement/.test(l)&&!m){
-            const r=l.match(/(\d[\d.,]*)\s*kr/);
-            if(r) m=+r[1].replace(",",".");
-        }
-    });
-    return {forbruk:f,påslag:p,mnd:m};
-}
-
-/* ---------- UI ---------- */
-
-function fill(d){
-    results.style.display="block";
-
-    inpForbruk.value=d.forbruk||"";
-    warnForbruk.style.display=d.forbruk?"none":"block";
-
-    inpPåslag.value=d.påslag||"";
-    warnPåslag.style.display=d.påslag?"none":"block";
-
-    inpMnd.value=d.mnd||"";
-    warnMnd.style.display=d.mnd?"none":"block";
-}
-
-function compare(){
-    const f=+inpForbruk.value||0;
-    const p=+inpPåslag.value||0;
-    const m=+inpMnd.value||0;
-    const diff=f*p/100+m-(f*3.4/100+49);
-    comparisonResult.innerHTML=
-        diff>0
-        ? `<div class="green">Du sparer ${diff.toFixed(0)} kr per måned</div>`
-        : `Tibber blir dyrere`;
-    comparisonBox.style.display="block";
-}
-
-function toggleDetails(){
-    const f=+inpForbruk.value||0;
-    const p=+inpPåslag.value||0;
-    const m=+inpMnd.value||0;
-    detailsBox.innerHTML=`
-    <b>Din avtale</b><br>
-    Påslag: ${p} øre<br>
-    Månedsavgift: ${m} kr<br><br>
-    <b>Tibber</b><br>
-    Påslag: 3,4 øre<br>
-    Månedsavgift: 49 kr
-    `;
-    detailsBox.style.display=
-        detailsBox.style.display==="block"?"none":"block";
-}
+const f=f, p=p, m=m;
 </script>
 </body>
 </html>
