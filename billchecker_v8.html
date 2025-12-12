@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v1.1</title>
+<title>Tibber Fakturaanalyse v1.2</title>
 
 <style>
 @font-face {
@@ -34,21 +34,10 @@ body {
     text-align: center;
 }
 
-h1 {
-    font-size: 2.2rem;
-    margin-bottom: 6px;
-}
+h1 { font-size: 2.2rem; margin-bottom: 6px; }
+h3 { font-size: 1rem; color: #ccc; font-weight: 400; line-height: 1.45; margin-bottom: 25px; }
 
-h3 {
-    font-size: 1rem;
-    color: #ccc;
-    font-weight: 400;
-    line-height: 1.45;
-    margin-bottom: 25px;
-}
-
-.uploadBtn,
-.button {
+.uploadBtn, .button {
     background: #1ED0E7;
     color: black;
     border: none;
@@ -59,16 +48,9 @@ h3 {
     cursor: pointer;
 }
 
-.uploadBtn {
-    display: inline-block;
-    margin-top: 20px;
-}
+.uploadBtn { display: inline-block; margin-top: 20px; }
 
-.fileHint {
-    margin-top: 10px;
-    font-size: .85rem;
-    color: #aaa;
-}
+.fileHint { margin-top: 10px; font-size: .85rem; color: #aaa; }
 
 .spinner {
     display: none;
@@ -81,12 +63,9 @@ h3 {
     animation: spin .9s linear infinite;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-#results,
-#comparisonBox {
+#results, #comparisonBox {
     display: none;
     margin-top: 30px;
     padding: 25px;
@@ -95,11 +74,7 @@ h3 {
     text-align: left;
 }
 
-.title {
-    color: #1ED0E7;
-    font-size: 1.3rem;
-    margin-bottom: 14px;
-}
+.title { color: #1ED0E7; font-size: 1.3rem; margin-bottom: 14px; }
 
 .valueField {
     width: 160px;
@@ -111,30 +86,11 @@ h3 {
     text-align: right;
 }
 
-.warn {
-    color: #FFD24C;
-    font-size: .85rem;
-    margin-bottom: 10px;
-}
+.warn { color: #FFD24C; font-size: .85rem; margin-bottom: 10px; }
+.green { color: #4CFF4C; font-size: 1.8rem; font-weight: 700; }
+.red { color: #FF5B5B; font-size: 1.8rem; font-weight: 700; }
 
-.green {
-    color: #4CFF4C;
-    font-size: 1.8rem;
-    font-weight: 700;
-}
-
-.red {
-    color: #FF5B5B;
-    font-size: 1.8rem;
-    font-weight: 700;
-}
-
-.toggleExplain {
-    margin-top: 14px;
-    color: #1ED0E7;
-    cursor: pointer;
-    text-decoration: underline;
-}
+.toggleExplain { margin-top: 14px; color: #1ED0E7; cursor: pointer; text-decoration: underline; }
 
 #detailsBox {
     display: none;
@@ -152,23 +108,14 @@ h3 {
 <body>
 <div class="container">
 
-<img
-    src="https://images.ctfassets.net/zq85bj8o2ot3/3pxy6auNcSHUkZJmPJEegu/d4652795a22a6cc0fe3dd6f753358a7a/Tibber_Logotype_1080x500_White.png?h=250"
-    style="width:50%;max-width:360px;margin-bottom:24px"
->
-
 <h1>Fakturaanalyse</h1>
-<h3>
-    Sjekk om du kan spare med Tibber<br>
-    Last opp en detaljert kopi av strømregningen din
-</h3>
+<h3>Last opp en detaljert kopi av strømregningen din</h3>
 
 <label for="fileInput" class="uploadBtn">Last opp strømregning</label>
 <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png" hidden>
 <div id="fileHint" class="fileHint">Ingen fil valgt</div>
 
 <br><br>
-
 <button class="button" onclick="processFile()">Beregn</button>
 <div id="spinner" class="spinner"></div>
 
@@ -193,14 +140,8 @@ h3 {
 <div id="comparisonBox">
     <div class="title">Sammenligning</div>
     <div id="comparisonResult"></div>
-
     <div class="toggleExplain" onclick="toggleDetails()">Vis detaljert forklaring</div>
     <div id="detailsBox"></div>
-
-    <div style="margin-top:6px;font-size:.8rem;color:#888;">
-        Viser kun påslag og månedsavgift<br>
-        kWh forbruk kommer i tillegg
-    </div>
 </div>
 
 </div>
@@ -211,23 +152,6 @@ h3 {
 <script>
 const el = id => document.getElementById(id);
 
-const fileInput = el("fileInput");
-const fileHint = el("fileHint");
-const spinner = el("spinner");
-
-const results = el("results");
-const comparisonBox = el("comparisonBox");
-const comparisonResult = el("comparisonResult");
-const detailsBox = el("detailsBox");
-
-const inpForbruk = el("inpForbruk");
-const inpPåslag = el("inpPåslag");
-const inpMnd = el("inpMnd");
-
-const warnForbruk = el("warnForbruk");
-const warnPåslag = el("warnPåslag");
-const warnMnd = el("warnMnd");
-
 fileInput.addEventListener("change", () => {
     fileHint.textContent = fileInput.files.length
         ? "Valgt fil: " + fileInput.files[0].name
@@ -236,7 +160,6 @@ fileInput.addEventListener("change", () => {
 
 async function processFile() {
     if (!fileInput.files[0]) return;
-
     spinner.style.display = "block";
     let text = "";
     const file = fileInput.files[0];
@@ -255,7 +178,6 @@ async function extractPDF(file) {
     const buf = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
     let out = "";
-
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const content = await page.getTextContent();
@@ -268,18 +190,14 @@ async function extractPDFasImageText(file) {
     const buf = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
     const page = await pdf.getPage(1);
-
     const viewport = page.getViewport({ scale: 2 });
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-
     canvas.width = viewport.width;
     canvas.height = viewport.height;
-
     await page.render({ canvasContext: ctx, viewport }).promise;
     const blob = await new Promise(r => canvas.toBlob(r));
     const ocr = await Tesseract.recognize(blob, "nor+eng");
-
     return ocr.data.text;
 }
 
@@ -298,17 +216,19 @@ function parse(raw) {
     let påslag = null;
     let mnd = null;
 
-    const kwh = [...text.matchAll(/(\d{2,6}(?:\.\d{1,3})?)\s*kwh/g)];
-    for (const m of kwh) {
+    const kwhMatches = [...text.matchAll(/(\d{2,6}(?:\.\d+)?)\s*kwh/g)];
+    for (const m of kwhMatches) {
         const v = parseFloat(m[1]);
         if (v > 100) { forbruk = v; break; }
     }
 
-    const p = [...text.matchAll(/påslag[\s\S]{0,300}?(\d{1,2}(?:\.\d{1,2})?)\s*øre/g)];
-    if (p.length) påslag = parseFloat(p.at(-1)[1]);
+    const påslagRegex = /(påslag|energipåslag|påslag inkl|inkl\.? elsertifikat)[^0-9]{0,80}(\d{1,2}(?:\.\d{1,2})?)\s*øre\/?kwh/;
+    const påslagMatch = text.match(påslagRegex);
+    if (påslagMatch) påslag = parseFloat(påslagMatch[2]);
 
-    const mndMatch = text.match(/fastbeløp|månedsavgift|abonnement[\s\S]{0,80}?(\d{1,3}(?:\.\d{2})?)\s*kr/);
-    if (mndMatch) mnd = parseFloat(mndMatch[1]);
+    const fastRegex = /(månedsavgift|fastbeløp|abonnement|månedlig fastbeløp)[^0-9]{0,80}(\d{1,3}(?:\.\d{2})?)\s*kr/;
+    const fastMatch = text.match(fastRegex);
+    if (fastMatch) mnd = parseFloat(fastMatch[2]);
 
     return { forbruk, påslag, mnd };
 }
@@ -316,14 +236,14 @@ function parse(raw) {
 function fillFields(d) {
     results.style.display = "block";
 
-    inpForbruk.value = d.forbruk || "";
+    inpForbruk.value = d.forbruk ?? "";
     warnForbruk.style.display = d.forbruk ? "none" : "block";
 
-    inpPåslag.value = d.påslag || "";
-    warnPåslag.style.display = d.påslag ? "none" : "block";
+    inpPåslag.value = d.påslag ?? "";
+    warnPåslag.style.display = d.påslag !== null ? "none" : "block";
 
-    inpMnd.value = d.mnd || "";
-    warnMnd.style.display = d.mnd ? "none" : "block";
+    inpMnd.value = d.mnd ?? "";
+    warnMnd.style.display = d.mnd !== null ? "none" : "block";
 }
 
 function compareNow() {
@@ -334,27 +254,15 @@ function compareNow() {
     const diff = f * p / 100 + m - (f * 3.4 / 100 + 49);
 
     comparisonResult.innerHTML = diff > 0
-        ? `<div class="green">Du kan betale mindre med Tibber</div>Du sparer ${diff.toFixed(0)} kr per måned`
+        ? `<div class="green">Du kan spare med Tibber</div>${diff.toFixed(0)} kr per måned`
         : `<div class="red">Tibber er litt dyrere</div>`;
 
     comparisonBox.style.display = "block";
 }
 
 function toggleDetails() {
-    const f = parseFloat(inpForbruk.value) || 0;
-    const p = parseFloat(inpPåslag.value) || 0;
-    const m = parseFloat(inpMnd.value) || 0;
-
-    detailsBox.innerHTML = `
-        <strong>Din avtale</strong><br>
-        Påslag ${p} øre per kWh<br>
-        Månedsavgift ${m} kr<br><br>
-        <strong>Tibber</strong><br>
-        Påslag 3.4 øre per kWh<br>
-        Månedsavgift 49 kr
-    `;
-
-    detailsBox.style.display = detailsBox.style.display === "block" ? "none" : "block";
+    detailsBox.style.display =
+        detailsBox.style.display === "block" ? "none" : "block";
 }
 </script>
 </body>
