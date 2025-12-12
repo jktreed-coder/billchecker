@@ -173,7 +173,7 @@ Støttede filtyper: .jpg, .png, .pdf<br>
 All data behandles kun lokalt i nettleseren din. <br> Ingen filer lagres eller sendes videre.
 </div>
 
-<br> <br>
+<br><br>
 
 <button class="button" onclick="processFile()">Beregn</button>
 
@@ -201,9 +201,9 @@ Månedsavgift kr<br>
 <div class="title">Sammenligning</div>
 <div id="comparisonResult"></div>
 <div class="toggleExplain" onclick="toggleDetails()">Vis detaljert forklaring</div>
-    
+
 <div id="detailsBox"></div>
-    <div style="margin-top:6px;font-size:.8rem;color:#888;">
+<div style="margin-top:6px;font-size:.8rem;color:#888;">
 Viser kun hva du betaler totalt i påslag og månedsavgift. <br>kWh-forbruk kommer i tillegg.
 </div>
 </div>
@@ -262,26 +262,21 @@ function parse(raw){
 
     let forbruk=null;
     let påslag=null;
-    let påslagKwh = null;
+    let påslagKwh=null;
     let mnd=null;
 
-    /* HARD MONTHLY FEE RULE */
     const mndMatch=text.match(/(\d{1,3}(?:\.\d{1,2})?)\s*kr\/?mnd|månedlig\s+fastbeløp\s+(\d{1,3}(?:\.\d{1,2})?)/);
     if(mndMatch){
-        mnd=parseFloat((mndMatch[1]||mndMatch[2]).replace(",","."));        
+        mnd=parseFloat((mndMatch[1]||mndMatch[2]));
     }
 
-    /* FORTUM FASTBELØP (kr per måned, split tokens) */
-if(!mnd){
-    const fortumMatch = text.match(
-        /fastbeløp[\s\S]{0,40}?(\d{1,3}(?:[\.,]\d{1,2})?)\s*(kr)?[\s\S]{0,40}?per\s+mån/
-    );
-    if(fortumMatch){
-        mnd = parseFloat(fortumMatch[1].replace(",","."));
+    if(!mnd){
+        const fortumMatch=text.match(/fastbeløp[\s\S]{0,40}?(\d{1,3}(?:\.\d{1,2})?)[\s\S]{0,40}?per\s+mån/);
+        if(fortumMatch){
+            mnd=parseFloat(fortumMatch[1]);
+        }
     }
-}
 
-    /* FORBRUK */
     const kwhMatches=[...text.matchAll(/(\d{2,6}(?:\.\d{1,3})?)\s*kwh/g)];
     for(const m of kwhMatches){
         const v=parseFloat(m[1]);
@@ -291,20 +286,19 @@ if(!mnd){
         }
     }
 
-   /* PÅSLAG + TILHØRENDE kWh (samme linje) */
-const påslagLineMatch = text.match(
-    /påslag[\s\S]{0,60}?(\d{2,6})\s*kwh[\s\S]{0,60}?(\d{1,2}(?:\.\d{1,2})?)\s*øre(?:\/kwh)?/
-);
+    const påslagLineMatch=text.match(/påslag[\s\S]{0,60}?(\d{2,6})\s*kwh[\s\S]{0,60}?(\d{1,2}(?:\.\d{1,2})?)\s*øre(?:\/kwh)?/);
+    if(påslagLineMatch){
+        påslagKwh=parseFloat(påslagLineMatch[1]);
+        påslag=parseFloat(påslagLineMatch[2]);
+    }
 
-if(påslagLineMatch){
-    påslagKwh = parseFloat(påslagLineMatch[1]);
-    påslag = parseFloat(påslagLineMatch[2]);
+    return{forbruk,påslag,påslagKwh,mnd};
 }
-
 
 /* ===== UI ===== */
 
 function fillFields(d){
+    window.påslagKwh=d.påslagKwh;
     results.style.display="block";
 
     inpForbruk.value=d.forbruk||"";
@@ -337,11 +331,13 @@ function toggleDetails(){
     const p=+inpPåslag.value||0;
     const m=+inpMnd.value||0;
 
+    const påslagKr=((window.påslagKwh ?? f)*p)/100;
+
     detailsBox.innerHTML=`
         <strong>Din avtale</strong><br>
         Påslag ${p} øre per kWh<br>
         Månedsavgift ${m} kr<br>
-        Totalt ${(f*p/100+m).toFixed(2)} kr<br><br>
+        Totalt ${(påslagKr+m).toFixed(2)} kr<br><br>
 
         <strong>Med Tibber</strong><br>
         Påslag 3.4 øre per kWh<br>
@@ -349,8 +345,8 @@ function toggleDetails(){
         Totalt ${(f*3.4/100+49).toFixed(2)} kr
     `;
 
-    detailsBox.style.display =
-        detailsBox.style.display==="block" ? "none" : "block";
+    detailsBox.style.display=
+        detailsBox.style.display==="block"?"none":"block";
 }
 </script>
 </body>
