@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v10.2</title>
+<title>Tibber Fakturaanalyse v10.3</title>
 
 <style>
 @font-face{
@@ -338,6 +338,42 @@ function parse(raw){
     }
 
     return{forbruk,påslag,påslagKwh,mnd};
+
+        /* ===== FALLBACK HEURISTIC FOR PÅSLAG ===== */
+
+    if(påslag === null){
+        const candidates = [];
+
+        const oreMatches = [...text.matchAll(/(\d{1,2}(?:\.\d{1,2})?)\s*øre\/?kwh/g)];
+
+        for(const m of oreMatches){
+            const value = parseFloat(m[1]);
+            const idx = m.index || 0;
+            const context = text.substring(Math.max(0, idx - 80), idx + 80);
+
+            // Exclusions
+            if(
+                context.includes("din strømpris") ||
+                context.includes("spotpris") ||
+                context.includes("norgespris") ||
+                context.includes("energiledd") ||
+                context.includes("nettleie")
+            ){
+                continue;
+            }
+
+            // Sanity bounds for påslag
+            if(value > 0 && value < 15){
+                candidates.push(value);
+            }
+        }
+
+        if(candidates.length === 1){
+            påslag = candidates[0];
+            påslagKwh = null;
+        }
+    }
+
 }
 
 /* ===== UI ===== */
