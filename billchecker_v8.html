@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v8.1</title>
+<title>Tibber Fakturaanalyse v8.2</title>
 
 <style>
 @font-face {
@@ -28,10 +28,24 @@ body{
     padding:40px;
 }
 
-.container{max-width:650px;width:100%;text-align:center;}
+.container{
+    width:100%;
+    max-width:650px;
+    text-align:center;
+}
 
-h1{font-size:2.2rem;margin-bottom:6px;}
-h3{font-size:1rem;color:#ccc;font-weight:400;margin-bottom:25px;}
+h1{
+    font-size:2.2rem;
+    margin-bottom:6px;
+}
+
+h3{
+    font-size:1rem;
+    color:#ccc;
+    font-weight:400;
+    line-height:1.45;
+    margin-bottom:25px;
+}
 
 .uploadBtn{
     display:inline-block;
@@ -43,7 +57,6 @@ h3{font-size:1rem;color:#ccc;font-weight:400;margin-bottom:25px;}
     cursor:pointer;
     margin-top:20px;
 }
-.uploadBtn:hover{opacity:.9;}
 
 .fileHint{
     margin-top:10px;
@@ -73,7 +86,10 @@ h3{font-size:1rem;color:#ccc;font-weight:400;margin-bottom:25px;}
     border-radius:50%;
     animation:spin .9s linear infinite;
 }
-@keyframes spin{to{transform:rotate(360deg);}}
+
+@keyframes spin{
+    to{transform:rotate(360deg);}
+}
 
 #results,#comparisonBox{
     background:#0f0f0f;
@@ -84,7 +100,11 @@ h3{font-size:1rem;color:#ccc;font-weight:400;margin-bottom:25px;}
     display:none;
 }
 
-.title{color:#1ED0E7;font-size:1.3rem;margin-bottom:14px;}
+.title{
+    color:#1ED0E7;
+    font-size:1.3rem;
+    margin-bottom:14px;
+}
 
 input.valueField{
     width:160px;
@@ -96,10 +116,30 @@ input.valueField{
     text-align:right;
 }
 
-.warn{color:#FFD24C;font-size:.85rem;margin-bottom:10px;}
+.warn{
+    color:#FFD24C;
+    font-size:.85rem;
+    margin-bottom:10px;
+}
 
-.green{color:#4CFF4C;font-size:1.8rem;font-weight:700;}
-.red{color:#FF5B5B;font-size:1.8rem;font-weight:700;}
+.green{
+    color:#4CFF4C;
+    font-size:1.8rem;
+    font-weight:700;
+}
+
+.red{
+    color:#FF5B5B;
+    font-size:1.8rem;
+    font-weight:700;
+}
+
+.toggleExplain{
+    margin-top:14px;
+    color:#1ED0E7;
+    cursor:pointer;
+    text-decoration:underline;
+}
 
 #detailsBox{
     margin-top:18px;
@@ -109,13 +149,6 @@ input.valueField{
     display:none;
     font-size:.95rem;
     color:#ccc;
-}
-
-.toggleExplain{
-    margin-top:14px;
-    color:#1ED0E7;
-    cursor:pointer;
-    text-decoration:underline;
 }
 </style>
 </head>
@@ -127,7 +160,10 @@ input.valueField{
 style="width:50%;max-width:360px;margin-bottom:24px">
 
 <h1>Fakturaanalyse</h1>
-<h3>Sjekk om du kan spare med Tibber! Vår fakturaanalyse sjekker din strømregning på sekunder. Last opp en detaljert kopi som viser påslag og evt. månedsavgift. Om systemet ikke klarer å gjenkjenne verdiene, kan du fylle inn disse manuelt i neste steg.</h3>
+<h3>
+Sjekk om du kan spare med Tibber! Vår fakturaanalyse sjekker din strømregning på sekunder.
+Last opp en detaljert kopi som viser påslag og evt. månedsavgift.
+</h3>
 
 <label for="fileInput" class="uploadBtn">Last opp strømregning</label>
 <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none">
@@ -137,7 +173,7 @@ style="width:50%;max-width:360px;margin-bottom:24px">
 <button class="button" onclick="processFile()">Beregn</button>
 
 <p style="font-size:.85rem;color:#aaa;max-width:520px;margin:12px auto">
-Strømregningen din behandles kun lokalt i nettleseren din. Ingen filer eller data lagres eller sendes til Tibber eller tredjeparter.
+Regningen behandles kun lokalt i nettleseren din. Ingen filer eller data lagres eller sendes til Tibber eller tredjeparter.
 </p>
 
 <div id="spinner" class="spinner"></div>
@@ -147,15 +183,15 @@ Strømregningen din behandles kun lokalt i nettleseren din. Ingen filer eller da
 
 Forbruk (kWh):<br>
 <input id="inpForbruk" class="valueField"><br>
-<div id="warnForbruk" class="warn" style="display:none">Ikke funnet i strømregning - skriv inn manuelt</div>
+<div id="warnForbruk" class="warn">Ikke funnet i faktura</div>
 
 Påslag (øre per kWh):<br>
 <input id="inpPåslag" class="valueField"><br>
-<div id="warnPåslag" class="warn" style="display:none">Ikke funnet i strømregning - skriv inn manuelt</div>
+<div id="warnPåslag" class="warn">Ikke funnet i faktura</div>
 
 Månedsavgift (kr):<br>
 <input id="inpMnd" class="valueField"><br>
-<div id="warnMnd" class="warn" style="display:none">Ikke funnet i strømregning - skriv inn manuelt</div>
+<div id="warnMnd" class="warn">Ikke funnet i faktura</div>
 
 <button class="button" onclick="compareNow()">Sammenlign med Tibber</button>
 </div>
@@ -179,22 +215,27 @@ fileInput.addEventListener("change",()=>{
     }
 });
 
-function showSpinner(x){spinner.style.display=x?"block":"none";}
+function showSpinner(x){
+    spinner.style.display = x ? "block" : "none";
+}
 
 async function processFile(){
     if(!fileInput.files[0])return;
     showSpinner(true);
+
     let text="";
     const f=fileInput.files[0];
-    if(f.type==="application/pdf")text=await extractPDF(f);
+
+    if(f.type==="application/pdf") text=await extractPDF(f);
     else text=await extractImage(f);
+
     fillFields(parse(text));
     showSpinner(false);
 }
 
 async function extractPDF(f){
-    const b=await f.arrayBuffer();
-    const pdf=await pdfjsLib.getDocument({data:b}).promise;
+    const buf=await f.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:buf}).promise;
     let out="";
     for(let i=1;i<=pdf.numPages;i++){
         const p=await pdf.getPage(i);
@@ -210,44 +251,68 @@ async function extractImage(f){
 }
 
 function classify(l){
-    if(/påslag/.test(l))return"påslag";
-    if(/månedsavgift|månedspris|fastpris|fastbeløp|abonnementspris|abonnementsavgift|abonnement|administrasjon|grunnbeløp/.test(l))return"mnd";
-    return"";
+    if(/påslag/.test(l)) return "påslag";
+    if(/månedsavgift|månedspris|fastpris|fastbeløp|abonnementspris|abonnementsavgift|abonnement|administrasjon|grunnbeløp/.test(l))
+        return "mnd";
+    return "";
 }
 
 function parse(t){
     const lines=t.toLowerCase().split(/\n+/);
     let f=null,p=null,m=null;
+
     for(let i=0;i<lines.length;i++){
         const l=lines[i];
-        if(!f){const r=l.match(/(\d[\d.,]*)\s*kwh/);if(r)f=parseFloat(r[1].replace(",","."));}
-        if(!p&&classify(l)==="påslag"){const r=l.match(/(\d[\d.,]*)\s*øre/);if(r&&parseFloat(r[1])<=20)p=parseFloat(r[1]);}
-        if(!m&&classify(l)==="mnd"){
-            let r=l.match(/(\d[\d.,]*)\s*kr/);
-            if(!r&&lines[i+1])r=lines[i+1].match(/(\d[\d.,]*)\s*kr/);
-            if(r)m=parseFloat(r[1].replace(",","."));}
+
+        if(!f){
+            const r=l.match(/(\d[\d.,]*)\s*kwh/);
+            if(r) f=parseFloat(r[1].replace(",",".")); 
+        }
+
+        if(!p && classify(l)==="påslag"){
+            const r=l.match(/(\d[\d.,]*)\s*øre/);
+            if(r && parseFloat(r[1])<=20) p=parseFloat(r[1].replace(",",".")); 
+        }
+
+        if(!m && classify(l)==="mnd"){
+            const r=l.match(/(\d[\d.,]*)\s*kr/);
+            if(r) m=parseFloat(r[1].replace(",",".")); 
+        }
     }
-    return{forbruk:f,påslag:p,mndavg:m};
+    return {forbruk:f,påslag:p,mndavg:m};
 }
 
 function fillFields(d){
     results.style.display="block";
+
     inpForbruk.value=d.forbruk||"";
+    warnForbruk.style.display=d.forbruk?"none":"block";
+
     inpPåslag.value=d.påslag||"";
+    warnPåslag.style.display=d.påslag?"none":"block";
+
     inpMnd.value=d.mndavg||"";
+    warnMnd.style.display=d.mndavg?"none":"block";
 }
 
 function compareNow(){
-    const f=+inpForbruk.value||0,p=+inpPåslag.value||0,m=+inpMnd.value||0;
+    const f=+inpForbruk.value||0;
+    const p=+inpPåslag.value||0;
+    const m=+inpMnd.value||0;
+
     const diff=f*p/100+m-(f*3.4/100+49);
-    comparisonResult.innerHTML=diff>0?
-    `<div class="green">Du kan betale mindre med Tibber</div>Du sparer ${diff.toFixed(0)} kr per måned`:
-    `<div class="red">Basert på strømregningen din blir Tibber litt dyrere for deg</div>`;
+
+    comparisonResult.innerHTML =
+        diff>0
+        ? `<div class="green">Du kan betale mindre med Tibber</div>Du sparer ${diff.toFixed(0)} kr per måned`
+        : `<div class="red">Tibber blir dyrere for deg</div>`;
+
     comparisonBox.style.display="block";
 }
 
 function toggleDetails(){
-    detailsBox.style.display=detailsBox.style.display==="block"?"none":"block";
+    detailsBox.style.display =
+        detailsBox.style.display==="block" ? "none" : "block";
 }
 </script>
 </body>
