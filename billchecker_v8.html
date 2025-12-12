@@ -251,37 +251,45 @@ async function extractImage(f){
     return r.data.text;
 }
 
-function classify(l){
-    if(/påslag/.test(l)) return "påslag";
-    if(/månedsavgift|månedspris|fastpris|fastbeløp|abonnementspris|abonnementsavgift|abonnement|administrasjon|grunnbeløp/.test(l))
-        return "mnd";
-    return "";
+/* ---------------- LABEL-DRIVEN PARSER ---------------- */
+
+function normalize(t){
+    return t
+        .toLowerCase()
+        .replace(/kwt/g,"kwh")
+        .replace(/\s+/g," ");
 }
 
 function parse(t){
-    const lines=t.toLowerCase().split(/\n+/);
-    let f=null,p=null,m=null;
+    const lines = normalize(t).split(/\n+/);
 
-    for(let i=0;i<lines.length;i++){
-        const l=lines[i];
+    let forbruk=null, påslag=null, mnd=null;
 
-        if(!f){
+    for(const l of lines){
+
+        if(!forbruk){
             const r=l.match(/(\d[\d.,]*)\s*kwh/);
-            if(r) f=parseFloat(r[1].replace(",",".")); 
+            if(r) forbruk=parseFloat(r[1].replace(",","."));
         }
 
-        if(!p && classify(l)==="påslag"){
+        if(!påslag && /påslag/.test(l) && /øre/.test(l) && !/nettleie|enova/.test(l)){
             const r=l.match(/(\d[\d.,]*)\s*øre/);
-            if(r && parseFloat(r[1])<=20) p=parseFloat(r[1].replace(",",".")); 
+            if(r){
+                const v=parseFloat(r[1].replace(",","."));
+                if(v>=2 && v<=20) påslag=v;
+            }
         }
 
-        if(!m && classify(l)==="mnd"){
+        if(!mnd && /månedsavgift|månedspris|fastbeløp|abonnementsavgift|abonnement|administrasjon|tibber-abonnement/.test(l) && /kr/.test(l) && !/kwh/.test(l)){
             const r=l.match(/(\d[\d.,]*)\s*kr/);
-            if(r) m=parseFloat(r[1].replace(",",".")); 
+            if(r) mnd=parseFloat(r[1].replace(",","."));
         }
     }
-    return {forbruk:f,påslag:p,mndavg:m};
+
+    return { forbruk, påslag, mndavg:mnd };
 }
+
+/* ---------------- UI ---------------- */
 
 function fillFields(d){
     results.style.display="block";
@@ -330,7 +338,6 @@ function toggleDetails(){
         Månedsavgift: 49 kr<br>
         Total basert på ${f} kWh: <strong>${tibTotal} kr</strong>
     `;
-
     detailsBox.style.display =
         detailsBox.style.display==="block" ? "none" : "block";
 }
