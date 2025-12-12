@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v10.4</title>
+<title>Tibber Fakturaanalyse v10.5</title>
 
 <style>
 @font-face{
@@ -349,17 +349,15 @@ function parse(raw){
             const idx = m.index || 0;
             const context = text.substring(Math.max(0, idx - 80), idx + 80);
 
-            // Exclusions
             if(
                 context.includes("din strømpris") ||
                 context.includes("spotpris") ||
                 context.includes("norgespris") ||
-                context.includes("energiledd") ||
+                context.includes("energiledd")
             ){
                 continue;
             }
 
-            // Sanity bounds for påslag
             if(value > 0 && value < 15){
                 candidates.push(value);
             }
@@ -371,66 +369,7 @@ function parse(raw){
         }
     }
 
-
     return{forbruk,påslag,påslagKwh,mnd};
-
-        
-}
-
-/* ===== UI ===== */
-
-function fillFields(d){
-    window.påslagKwh=d.påslagKwh;
-    results.style.display="block";
-
-    inpForbruk.value=d.forbruk||"";
-    warnForbruk.style.display=d.forbruk?"none":"block";
-
-    inpPåslag.value=d.påslag||"";
-    warnPåslag.style.display=d.påslag?"none":"block";
-
-    inpMnd.value=d.mnd||"";
-    warnMnd.style.display=d.mnd?"none":"block";
-}
-
-function compareNow(){
-    const f = parseFloat(inpForbruk.value.replace(",", ".")) || 0;
-    const p = parseFloat(inpPåslag.value.replace(",", ".")) || 0;
-    const m = parseFloat(inpMnd.value.replace(",", ".")) || 0;
-
-    const diff=f*p/100+m-(f*3.4/100+49);
-
-    comparisonResult.innerHTML=
-        diff>0
-        ? `<div class="green">Du kan betale mindre med Tibber</div>Du sparer ${diff.toFixed(0)} kr per måned`
-        : `<div class="red">Tibber er litt dyrere, men...</div>`;
-
-    comparisonBox.style.display="block";
-}
-
-function toggleDetails(){
-    const f = parseFloat(inpForbruk.value.replace(",", ".")) || 0;
-    const p = parseFloat(inpPåslag.value.replace(",", ".")) || 0;
-    const m = parseFloat(inpMnd.value.replace(",", ".")) || 0;
-
-    const kwhBase = window.påslagKwh ?? f;
-    const påslagKr = (kwhBase * p) / 100;
-    const tibberKr = (kwhBase * 3.4) / 100;
-
-    detailsBox.innerHTML=`
-        <strong>Din avtale</strong><br>
-        Påslag ${p} øre per kWh<br>
-        Månedsavgift ${m} kr<br>
-        Totalt ${(påslagKr + m).toFixed(2)} kr<br><br>
-
-        <strong>Med Tibber</strong><br>
-        Påslag 3.4 øre per kWh<br>
-        Månedsavgift 49 kr<br>
-        Totalt ${(tibberKr + 49).toFixed(2)} kr
-    `;
-
-    detailsBox.style.display=
-        detailsBox.style.display==="block"?"none":"block";
 }
 </script>
 </body>
