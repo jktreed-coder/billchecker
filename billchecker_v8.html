@@ -268,6 +268,16 @@ function parse(raw){
         mnd=parseFloat((mndMatch[1]||mndMatch[2]).replace(",","."));        
     }
 
+    /* FORTUM FASTBELØP (kr per måned, split tokens) */
+if(!mnd){
+    const fortumMatch = text.match(
+        /fastbeløp[\s\S]{0,40}?(\d{1,3}(?:[\.,]\d{1,2})?)\s*(kr)?[\s\S]{0,40}?per\s+mån/
+    );
+    if(fortumMatch){
+        mnd = parseFloat(fortumMatch[1].replace(",","."));
+    }
+}
+
     /* FORBRUK */
     const kwhMatches=[...text.matchAll(/(\d{2,6}(?:\.\d{1,3})?)\s*kwh/g)];
     for(const m of kwhMatches){
