@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Tibber Fakturaanalyse v9.7</title>
+<title>Tibber Fakturaanalyse v9.8</title>
 
 <style>
 @font-face{
@@ -260,6 +260,8 @@ async function extractImage(f){
 function parse(raw){
     const text=raw.toLowerCase().replace(/,/g,".").replace(/kwt/g,"kwh");
 
+    const isVibb = text.includes("vibb") || text.includes("app+");
+
     let forbruk=null;
     let påslag=null;
     let påslagKwh=null;
@@ -286,10 +288,17 @@ function parse(raw){
         }
     }
 
-    const påslagLineMatch=text.match(/påslag[\s\S]{0,60}?(\d{2,6})\s*kwh[\s\S]{0,60}?(\d{1,2}(?:\.\d{1,2})?)\s*øre(?:\/kwh)?/);
-    if(påslagLineMatch){
-        påslagKwh=parseFloat(påslagLineMatch[1]);
-        påslag=parseFloat(påslagLineMatch[2]);
+    if(!isVibb){
+        const påslagLineMatch=text.match(/påslag[\s\S]{0,60}?(\d{2,6})\s*kwh[\s\S]{0,60}?(\d{1,2}(?:\.\d{1,2})?)\s*øre(?:\/kwh)?/);
+        if(påslagLineMatch){
+            påslagKwh=parseFloat(påslagLineMatch[1]);
+            påslag=parseFloat(påslagLineMatch[2]);
+        }
+    }
+
+    if(isVibb){
+        påslag=0;
+        påslagKwh=null;
     }
 
     return{forbruk,påslag,påslagKwh,mnd};
